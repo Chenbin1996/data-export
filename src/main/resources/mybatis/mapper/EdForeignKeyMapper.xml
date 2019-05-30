@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdForeignKeyMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdForeignKey">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="Id" jdbcType="VARCHAR" property="id" />
+    <result column="tableField_id" jdbcType="VARCHAR" property="tableFieldId" />
+    <result column="table_name" jdbcType="VARCHAR" property="tableName" />
+    <result column="field" jdbcType="VARCHAR" property="field" />
+  </resultMap>
+</mapper>

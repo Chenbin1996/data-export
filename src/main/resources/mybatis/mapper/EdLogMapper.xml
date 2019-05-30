@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdLogMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdLog">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="template_id" jdbcType="VARCHAR" property="templateId" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="creator_id" jdbcType="VARCHAR" property="creatorId" />
+    <result column="foreign_table" jdbcType="VARCHAR" property="foreignTable" />
+    <result column="expoort_time" jdbcType="TIMESTAMP" property="expoortTime" />
+    <result column="dburl" jdbcType="VARCHAR" property="dburl" />
+    <result column="port" jdbcType="INTEGER" property="port" />
+    <result column="dbname" jdbcType="VARCHAR" property="dbname" />
+    <result column="table_name" jdbcType="VARCHAR" property="tableName" />
+    <result column="total_count" jdbcType="BIGINT" property="totalCount" />
+    <result column="sort" jdbcType="INTEGER" property="sort" />
+  </resultMap>
+
+  <resultMap id="DtoResultMap" type="com.ruxuanwo.data.export.dto.EdLogDTO">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="template_id" jdbcType="VARCHAR" property="templateId" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="creator_id" jdbcType="VARCHAR" property="creatorId" />
+    <result column="foreign_table" jdbcType="VARCHAR" property="foreignTable" />
+    <result column="expoort_time" jdbcType="TIMESTAMP" property="expoortTime" />
+    <result column="dburl" jdbcType="VARCHAR" property="dburl" />
+    <result column="port" jdbcType="INTEGER" property="port" />
+    <result column="dbname" jdbcType="VARCHAR" property="dbname" />
+    <result column="table_name" jdbcType="VARCHAR" property="tableName" />
+    <result column="total_count" jdbcType="BIGINT" property="totalCount" />
+    <result column="sort" jdbcType="INTEGER" property="sort" />
+  </resultMap>
+
+  <select id="findByState" resultType="com.ruxuanwo.data.export.dto.EdLogDTO">
+    SELECT
+        ed_log.`status`,
+        ed_log.id,
+        ed_log.total_count AS totalCount,
+        ed_log.template_id AS templateId,
+        ed_template.template_name AS templateName
+    FROM
+        `ed_log`,
+        ed_template
+    WHERE
+        ed_log.template_id = ed_template.id
+    <if test="stateList != null">
+        AND ed_log.status in
+        <foreach collection="stateList" item="state" open="(" close=")" separator=",">
+            #{state}
+        </foreach>
+    </if>
+    <if test="name != null">
+      AND ed_template.template_name like concat('%', #{name},'%')
+    </if>
+      ORDER BY ed_log.sort DESC
+  </select>
+
+  <select id="findDtoById" resultMap="DtoResultMap">
+    SELECT * FROM
+      ed_log
+    WHERE id = #{id}
+  </select>
+
+    <select id="findByTempId" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT * FROM ed_log WHERE template_id = #{templateId}
+    </select>
+
+    <select id="findByTemplateIdAndStatus" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            `ed_log`
+        WHERE
+            template_id = #{templateId}
+        AND `status` = #{status}
+    </select>
+
+    <delete id="deleteByTemp">
+        DELETE
+        FROM
+            ed_log
+        WHERE
+            id IN (
+                SELECT DISTINCT
+                    log_id
+                FROM
+                    ${tableName}
+            )
+        AND status = #{status}
+    </delete>
+
+    <select id="getMaxSort" resultType="java.lang.Integer">
+        SELECT MAX(sort) FROM `ed_log`;
+    </select>
+
+</mapper>

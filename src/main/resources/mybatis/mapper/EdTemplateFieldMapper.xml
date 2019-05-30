@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdTemplateFieldMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdTemplateField">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="template_id" jdbcType="VARCHAR" property="templateId" />
+    <result column="default_value" jdbcType="VARCHAR" property="defaultValue" />
+    <result column="sort" jdbcType="INTEGER" property="sort" />
+  </resultMap>
+
+    <resultMap id="BaseResultMapDTO" type="com.ruxuanwo.data.export.dto.EdTemplateFieldDTO" extends="BaseResultMap">
+
+            <collection property="edTools" ofType="com.ruxuanwo.data.export.dto.EdToolsDTO" select="selectToolsByFieldId" column="id">
+
+            </collection>
+
+        <collection property="edTableFields" ofType="com.ruxuanwo.data.export.domain.EdTableField" select="selectTableFieldsByFieldId" column="id">
+
+        </collection>
+    </resultMap>
+
+    <select id="queryByTempId" resultMap="BaseResultMapDTO" parameterType="java.lang.String">
+        SELECT
+            etf.*
+        FROM
+            ed_template_field etf
+        WHERE
+            etf.template_id = #{templateId}
+    </select>
+
+    <select id="selectToolsByFieldId" parameterType="java.lang.String" resultType="com.ruxuanwo.data.export.dto.EdToolsDTO">
+        SELECT
+            et.*,eft.type AS failType, eft.other AS other
+        FROM
+            ed_field_tools eft,
+            ed_tools et
+        WHERE
+            et.id = eft.tool_id
+        AND eft.field_id = #{filedId}
+    </select>
+    <select id="selectTableFieldsByFieldId" parameterType="java.lang.String" resultType="com.ruxuanwo.data.export.domain.EdTableField">
+        SELECT
+            etf.Id AS id,
+            etf.field_name AS fieldName,
+            etf.table_name AS tableName,
+            etf.field_type AS fieldType,
+            etf.type AS type,
+            etf.template_id AS templateId
+        FROM
+            ed_table_field etf,
+            ed_template_tablefield ettf
+        WHERE
+            etf.id = ettf.tableField_id
+            AND ettf.templateField_id = #{templateField_id}
+    </select>
+
+    <select id="findByTemplate" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT * FROM ed_template_field WHERE template_id = #{id}
+    </select>
+</mapper>

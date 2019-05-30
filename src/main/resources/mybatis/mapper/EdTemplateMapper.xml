@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdTemplateMapper">
+    <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdTemplate">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="template_name" jdbcType="VARCHAR" property="templateName"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="app_id" jdbcType="VARCHAR" property="appId"/>
+        <result column="module_id" jdbcType="VARCHAR" property="moduleId"/>
+        <result column="module_name" jdbcType="VARCHAR" property="moduleName"/>
+    </resultMap>
+
+    <resultMap id="ResultMap" type="com.ruxuanwo.data.export.dto.EdTemplateDTO" extends="BaseResultMap">
+        <result column="userName" jdbcType="VARCHAR" property="userName"/>
+    </resultMap>
+
+    <resultMap id="FieldConfigMap" type="com.ruxuanwo.data.export.config.FieldConfig">
+        <result column="name" jdbcType="VARCHAR" property="excelName"/>
+        <result column="default_value" jdbcType="VARCHAR" property="defaultValue"/>
+        <result column="sort" jdbcType="INTEGER" property="columnName"/>
+        <collection property="toosList" ofType="com.ruxuanwo.data.export.dto.EdToolsDTO"  select="queryByFieldId" column="id">
+        </collection>
+    </resultMap>
+
+    <resultMap id="tableAndFieldMap" type="com.ruxuanwo.data.export.dto.EdTemplateTableDTO">
+        <collection property="fieldList" ofType="com.ruxuanwo.data.export.dto.FieldDTO"  select="queryFieldInform"
+                    column="{templateId=templateId,tableName=tableName}">
+        </collection>
+    </resultMap>
+
+    <select id="list" resultMap="ResultMap">
+        SELECT * FROM ed_template
+        <where>
+            <if test="appId != null">AND app_id = #{appId} </if>
+            <if test="moduleId != null"> AND module_id = #{moduleId} </if>
+            <if test="templateName != null">AND template_name LIKE concat('%', #{templateName}, '%')</if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="findTableAndField" resultMap="tableAndFieldMap">
+        SELECT
+            `table_name` AS tableName,
+            import_sort AS importSort,
+            key_name AS keyName,
+            ken_generate AS kenGenerate,
+            template_id AS templateId
+        FROM
+            `ed_template_table`
+        WHERE
+            template_id = #{templateId}
+    </select>
+
+    <select id="queryFieldInform" resultType="com.ruxuanwo.data.export.dto.FieldDTO">
+        SELECT
+            ed_table_field.field_name AS fieldName,
+            ed_table_field.type,
+            ed_template_field.`name` AS excelName,
+            ed_field_value.`value` AS defaultValue,
+            ed_tools.class_name AS generateName,
+            ed_foreign_key.table_name AS foreignTable,
+            ed_foreign_key.field AS foreignField
+        FROM
+            ed_table_field
+        LEFT JOIN ed_template_tablefield ON ed_table_field.Id = ed_template_tablefield.tableField_id
+        LEFT JOIN ed_template_field ON ed_template_tablefield.templateField_id = ed_template_field.id
+        LEFT JOIN ed_field_value ON ed_table_field.Id = ed_field_value.tableField_id
+        LEFT JOIN ed_field_generator ON ed_table_field.Id = ed_field_generator.tableField_id
+        LEFT JOIN ed_tools ON ed_field_generator.tool_id = ed_tools.id
+        LEFT JOIN ed_foreign_key ON ed_table_field.Id = ed_foreign_key.tableField_id
+        WHERE
+            ed_table_field.template_id = #{templateId}
+        AND ed_table_field.table_name = #{tableName}
+    </select>
+
+    <select id="selectByTemplateId" resultMap="FieldConfigMap">
+        SELECT
+            *
+        FROM
+            `ed_template_field`
+        WHERE
+            template_id = #{templateId}
+    </select>
+
+    <select id="queryByFieldId" resultType="com.ruxuanwo.data.export.dto.EdToolsDTO">
+        SELECT
+            ed_field_tools.type AS failType,
+            ed_tools.type,
+            ed_tools.class_name AS className,
+            ed_field_tools.other,
+            ed_tools.name
+        FROM
+            ed_field_tools,
+            ed_tools
+        WHERE ed_field_tools.tool_id = ed_tools.id
+        AND ed_field_tools.field_id = #{fieldId}
+        ORDER BY ed_tools.type, ed_tools.sort_order
+    </select>
+
+    <select id="countByName" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM ed_template
+        WHERE template_name = #{templateName}
+    </select>
+
+    <select id="findByTools" resultType="com.ruxuanwo.data.export.domain.EdTools" parameterType="java.lang.String">
+        SELECT
+            id          AS id,
+            name        AS name,
+            type        AS type,
+            class_name  AS className,
+            create_time AS createTime,
+            creator     AS creator,
+            description AS description,
+            sort_order  AS sortOrder
+        FROM
+            ed_tools
+        WHERE
+            id = #{templateId}
+    </select>
+
+    <update id="createOldDataTable" parameterType="java.util.HashMap">
+        CREATE TABLE IF NOT EXISTS ${tableName}(
+        id VARCHAR(32) NOT NULL,
+        log_id VARCHAR(32),
+        <foreach collection="list" item="column"  separator="VARCHAR(255),"
+                 close="VARCHAR(255), PRIMARY KEY (id) ,">
+            ${column.columnName}
+        </foreach>
+        state INT,
+        message VARCHAR(255)
+        ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+    </update>
+
+    <update id="createNewDataTable" parameterType="java.util.HashMap">
+        CREATE TABLE IF NOT EXISTS ${tableName}(
+        id VARCHAR(32) NOT NULL,
+        log_id VARCHAR(32),
+        temporary_id VARCHAR(32),
+        <foreach collection="list" item="column" separator="VARCHAR(255),"
+                 close="VARCHAR(255), PRIMARY KEY (id)">
+            ${column.columnName}
+        </foreach>
+        ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+    </update>
+
+    <select id="findLogId" resultType="java.lang.String">
+        SELECT DISTINCT log_id FROM #{tableName};
+    </select>
+
+    <update id="deleteTable" parameterType="java.lang.String">
+        DROP TABLE IF EXISTS ${tempTable}
+    </update>
+
+    <insert id="oldTableInsert" parameterType="java.util.HashMap">
+        INSERT INTO ${tableName}(
+        log_id,state,
+        <foreach collection="columns" item="column" separator="," close=",">
+            ${column.columnName}
+        </foreach>
+        id,message)
+        VALUES
+        <foreach collection="data" item="value"  separator="," >
+            (
+              #{logId},
+              ${value.state},
+              ${value.tempSql}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="newTableInsert" parameterType="java.util.HashMap">
+        INSERT INTO ${tableName}(
+        id,log_id,
+        <foreach collection="columns" item="column" separator="," close=",">
+            ${column.columnName}
+        </foreach>
+        temporary_id)
+        VALUES
+        <foreach collection="data" item="value"  separator="," >
+            (
+            REPLACE(UUID(),'-',''),
+            #{logId},
+            ${value.tempNewSql}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateTemporary">
+        UPDATE ${tableName}
+        SET
+        <foreach collection="dataMap" index="key" item="value"  separator="," >
+            ${key} = #{value}
+        </foreach>
+        WHERE
+            id = #{id}
+    </update>
+
+    <select id="selectNewTemporary" resultType="string">
+        SELECT id FROM ${tableName} WHERE temporary_id = #{temporaryId}
+    </select>
+
+    <select id="findTemByLogId" resultType="java.util.HashMap">
+        SELECT
+        <foreach collection="dataMap" index="key" item="value"  separator="," >
+            ${key} AS ${value}
+        </foreach>
+        FROM
+          ${tableName}
+        WHERE
+          log_id = #{logId}
+        <if test="dataType != null">
+          AND  state = #{dataType}
+        </if>
+    </select>
+
+    <delete id="deleteTemporary">
+        DELETE FROM ${tableName}
+        <where>
+            <if test="id != null">id = #{id}</if>
+            <if test="logId != null">AND log_id = #{logId}</if>
+            <if test="temporaryId != null">AND temporary_id = #{temporaryId}</if>
+        </where>
+    </delete>
+
+    <select id="isExists" resultType="java.lang.String">
+        SHOW TABLES LIKE #{tableName}
+    </select>
+
+    <select id="findNewTempData" resultType="java.util.HashMap">
+        SELECT
+          <foreach collection="map" index="key" item="value" separator=",">
+              ${value} AS ${key}
+          </foreach>
+        FROM
+          ${templateId}
+        WHERE log_id = #{logId}
+    </select>
+
+    <select id="getTemplateImport" resultType="java.lang.String" parameterType="java.lang.String">
+      SELECT
+        ed_tools.`class_name`
+    FROM
+        `ed_template_tool`,
+        ed_template,
+        ed_tools
+    WHERE
+        ed_template_tool.template_id = ed_template.id
+    AND ed_template_tool.tool_id = ed_tools.id
+    AND ed_template.id = #{templateId}
+    </select>
+
+</mapper>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdTableFieldMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdTableField">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="Id" jdbcType="VARCHAR" property="id" />
+    <result column="table_name" jdbcType="VARCHAR" property="tableName" />
+    <result column="field_name" jdbcType="VARCHAR" property="fieldName" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="field_type" jdbcType="INTEGER" property="fieldType" />
+    <result column="template_id" jdbcType="INTEGER" property="templateId" />
+  </resultMap>
+    
+    <select id="detail" resultType="com.ruxuanwo.data.export.dto.EdTableFieldDTO" parameterType="java.lang.String">
+        SELECT
+            ed_table_field.Id AS id,
+            ed_table_field.table_name AS tableName,
+            ed_table_field.field_name AS fieldName,
+            ed_table_field.template_id AS templateId,
+            ed_table_field.type,
+            ed_table_field.field_type AS fieldType,
+            ed_field_value.`value`,
+            ed_tools.id AS toolId,
+            ed_tools.`name` AS toolName,
+            ed_foreign_key.field AS foreignField,
+            ed_foreign_key.table_name AS foreignTableName
+        FROM
+            `ed_table_field`
+            LEFT JOIN ed_field_value ON ed_table_field.Id = ed_field_value.tableField_id
+            LEFT JOIN ed_field_generator ON ed_table_field.Id = ed_field_generator.tableField_id
+            LEFT JOIN ed_tools ON ed_field_generator.tool_id = ed_tools.id
+            LEFT JOIN ed_foreign_key ON ed_table_field.Id = ed_foreign_key.tableField_id
+            LEFT JOIN ed_template ON ed_table_field.template_id = ed_template.id
+        WHERE
+            ed_template.id = #{templateId}
+    </select>
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdToolsMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdTools">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="class_name" jdbcType="VARCHAR" property="className" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="sort_order" jdbcType="INTEGER" property="sortOrder" />
+  </resultMap>
+
+  <select id="findDtoById" resultType="com.ruxuanwo.data.export.dto.EdToolsDTO">
+   SELECT
+    id,
+    `name` ,
+    `type` ,
+    `class_name` AS `className`,
+    `create_time` AS `createTime`,
+    creator,
+    description
+    FROM `ed_tools`
+    WHERE id = #{id}
+  </select>
+
+  <select id="findAllDto" resultType="com.ruxuanwo.data.export.dto.EdToolsDTO">
+    SELECT
+        id,
+        `name` ,
+        `type` ,
+        `class_name` AS `className`,
+        `create_time` AS `createTime`,
+        creator,
+        description
+    FROM `ed_tools` ORDER BY createTime DESC
+  </select>
+
+  <select id="findByFieldId" resultType="com.ruxuanwo.data.export.domain.EdTools">
+    SELECT
+       `class_name` AS `className`
+    FROM
+      `ed_tools`
+    WHERE id in (
+      SELECT tool_id  FROM `ed_field_tools` WHERE field_id = #{fieldId}
+    )
+    ORDER BY `sort_order`
+  </select>
+
+    <select id="findMaxSort" resultType="java.lang.Integer">
+      SELECT max(sort_order) FROM `ed_tools` ;
+    </select>
+
+    <select id="findByName" resultType="java.util.HashMap">
+        SELECT * FROM `ed_tools` WHERE name = #{name};
+    </select>
+
+    <select id="selectByName" resultMap="BaseResultMap">
+        SELECT * FROM `ed_tools` WHERE name = #{name};
+    </select>
+
+</mapper>

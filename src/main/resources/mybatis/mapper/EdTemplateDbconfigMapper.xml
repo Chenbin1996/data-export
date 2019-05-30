@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdTemplateDbconfigMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdTemplateDbconfig">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="connection_name" jdbcType="VARCHAR" property="connectionName" />
+    <result column="template_id" jdbcType="VARCHAR" property="templateId" />
+    <result column="dburl" jdbcType="VARCHAR" property="dburl" />
+    <result column="dbtype_id" jdbcType="VARCHAR" property="dbtypeId" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="port" jdbcType="INTEGER" property="port" />
+    <result column="dbname" jdbcType="VARCHAR" property="dbname" />
+  </resultMap>
+
+    <resultMap id="ResultMap" type="com.ruxuanwo.data.export.dto.EdTemplateDbconfigDTO">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="connection_name" jdbcType="VARCHAR" property="connectionName" />
+    <result column="template_id" jdbcType="VARCHAR" property="templateId" />
+    <result column="dburl" jdbcType="VARCHAR" property="dburl" />
+    <result column="dbtype_id" jdbcType="VARCHAR" property="dbtypeId" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="port" jdbcType="INTEGER" property="port" />
+    <result column="dbname" jdbcType="VARCHAR" property="dbname" />
+    <result column="template_name" jdbcType="VARCHAR" property="templateName" />
+    <result column="name" jdbcType="VARCHAR" property="typeName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="app_id" jdbcType="VARCHAR" property="appId" />
+    <result column="module_id" jdbcType="VARCHAR" property="moduleId" />
+    <result column="module_name" jdbcType="VARCHAR" property="moduleName" />
+  </resultMap>
+
+    <select id="detail" resultMap="ResultMap" parameterType="java.lang.String">
+        SELECT
+            etd.*, ed. NAME,
+            et.template_name,
+            et.create_time,
+            et.creator,
+            et.description,
+            et.status,et.app_id,et.module_id,et.module_name
+        FROM
+            ed_template et,
+            ed_template_dbconfig etd,
+            ed_dbtype ed
+        WHERE
+            etd.dbtype_id = ed.id
+            AND etd.template_id = et.id
+            AND et.id = #{id}
+    </select>
+
+    <select id="findByTemplate" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT * FROM ed_template_dbconfig WHERE template_id = #{id}
+    </select>
+
+    <select id="selectDbConfig" resultType="com.ruxuanwo.data.export.dto.EdTemplateDbconfigDTO">
+      SELECT
+          ed_template_dbconfig.dburl,
+          ed_template_dbconfig.username,
+          ed_template_dbconfig.`password`,
+          ed_template_dbconfig.`port`,
+          ed_template_dbconfig.dbname,
+          ed_dbtype.driver_class AS driverClassName
+      FROM
+          ed_template_dbconfig
+      LEFT JOIN ed_dbtype ON ed_template_dbconfig.dbtype_id = ed_dbtype.id
+      WHERE
+        ed_template_dbconfig.template_id = #{templateId}
+    </select>
+
+</mapper>

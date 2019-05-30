@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdTemplateTableMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdTemplateTable">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="Id" jdbcType="VARCHAR" property="id" />
+    <result column="template_id" jdbcType="VARCHAR" property="templateId" />
+    <result column="table_name" jdbcType="VARCHAR" property="tableName" />
+    <result column="import_sort" jdbcType="INTEGER" property="importSort" />
+    <result column="key_name" jdbcType="VARCHAR" property="keyName" />
+    <result column="ken_generate" jdbcType="INTEGER" property="kenGenerate" />
+    <result column="key_type" jdbcType="INTEGER" property="keyType" />
+  </resultMap>
+
+    <select id="findByTableName" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT * FROM ed_template_table WHERE template_id = #{templateId}
+    </select>
+</mapper>

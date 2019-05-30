@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdDbtypeMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdDbtype">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="driver_class" jdbcType="VARCHAR" property="driverClass" />
+    <result column="port" jdbcType="INTEGER" property="port" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+  </resultMap>
+
+  <select id="findByName" resultMap="BaseResultMap">
+    SELECT * FROM ed_dbtype WHERE name = #{name}
+  </select>
+
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdFieldToolsMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdFieldTools">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="tool_id" jdbcType="VARCHAR" property="toolId" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="field_id" jdbcType="VARCHAR" property="fieldId" />
+    <result column="other" jdbcType="VARCHAR" property="other" />
+  </resultMap>
+  <resultMap id="ResultMap" type="com.ruxuanwo.data.export.dto.EdFieldToolsDTO">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="tool_id" jdbcType="VARCHAR" property="toolId" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="field_id" jdbcType="VARCHAR" property="fieldId" />
+    <result column="other" jdbcType="VARCHAR" property="other" />
+    <result column="name" jdbcType="VARCHAR" property="toolName" />
+  </resultMap>
+
+    <select id="findByField" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT * FROM ed_field_tools WHERE field_id = #{fieldId}
+    </select>
+
+    <select id="findByFieldAndTool" resultMap="ResultMap" parameterType="java.lang.String">
+        SELECT
+            ed_field_tools.*,
+            ed_tools.name
+        FROM ed_field_tools, ed_tools
+        WHERE ed_field_tools.tool_id = ed_tools.id
+        AND field_id = #{fieldId}
+    </select>
+
+    <select id="findFieldType" resultType="java.lang.String">
+      SELECT
+          ed_field_tools.type
+      FROM
+          ed_field_tools,
+          ed_tools
+      WHERE
+          ed_field_tools.tool_id = ed_tools.id
+      AND field_id = #{fieldId}
+      ORDER BY ed_tools.sort_order
+    </select>
+
+</mapper>

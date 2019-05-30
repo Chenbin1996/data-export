@@ -1,0 +1,108 @@
+<div ng-controller="dataEditCtrl">
+	<div class="bg-light lter b-b wrapper-md">
+		<h1 class="m-n font-thin h3">模板数据—编辑</h1>
+	</div>
+	<div class="wrapper-md">
+		<div class="panel panel-default m-all-0">
+			<div class="panel-body">
+				<form id="hydroNetAddForm" class="form-inline" method="get" novalidate="novalidate">
+					<div class="form-item">
+						<label>模板名称</label>
+						<input type="text" class="form-control input-short" ng-model="template_name"
+							   ng-blur="isRepeat()" ng-change = 'change_edit()'/>
+						<span ng-if="repeat">模板名称已存在，请重新填写！</span>
+					</div>
+					<br/>
+					<div class="form-item">
+						<label>描述</label>
+                        <textarea class="form-control textarea-long"  ng-model="description" ng-change = 'change_edit()' rows="4"></textarea>
+					</div>
+					<br/>
+                    <div class="form-item">
+                        <label>功能模块</label>
+                        <input ng-model="menuName" class="form-control input-short"  readonly/>
+                    </div>
+                    <br/>
+					<div class="form-item">
+						<label>连接名称</label>
+						<input type="text" class="form-control input-short" ng-model="conn_name" ng-change = 'change_edit()'/>
+					</div>
+					<br/>
+					<div class="form-item">
+						<label>数据库类型</label>
+						<select ng-init="init_type()" ng-model="db_type" ng-options="x.id as x.name for x in dbTypes" 
+							ng-change="type_change(db_type)" class="form-control select-short" > </select>
+					</div>
+					<br/>
+					<div class="form-item">
+						<label>数据库IP</label>
+						<input type="text" class="form-control input-short" ng-model="db_url" ng-change = 'change_reset()'  ng-blur="checkUrl(db_url)"/>
+					</div>
+					<br/>
+					<div class="form-item">
+						<label>用户名称</label>
+						<input type="text" class="form-control input-short" ng-model="user_name"  ng-change = 'change_reset()'/>
+					</div>
+					<br/>
+					<div class="form-item">
+						<label>密码</label>
+						<input type="password" class="form-control input-short" ng-model="user_password"  ng-change = 'password_reset()'/>
+					</div>
+					<br/>
+					<div class="form-item">
+						<label>端口</label>
+						<input type="text" class="form-control input-short" ng-model="db_port"  ng-change = 'change_reset()' ng-blur="checkPort(db_port)"/>
+					</div>
+					<br/>
+					<div class="form-item">
+						<label>数据库名</label>
+						<input type="text" class="form-control input-short"  ng-model="db_name" ng-change = 'change_reset()'/>
+					</div>
+				</form>
+			</div>
+			<div class="panel-footer m-b-10">
+				<div class="btn-box">
+					<button id="testButton" type="submit" class="btn btn-primary" ng-click="template_test()" ng-hide="button_test">
+						<i class="fa fa-plus"></i>测试连接
+					</button>
+					<button id="addButton" type="submit" class="btn btn-primary" ng-click="template_edit()" ng-hide="button_show">
+						<i class="fa fa-plus"></i>修改配置
+					</button>
+					<button type="submit" class="btn btn-default" ng-click="back()">
+						<i class="fa fa-reply"></i>返回
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	
+	<!--描述：数据库表名-->
+	<div class="modal fade" id="table_ztree"  role="dialog_region" ng-init="init_region()">
+		<div class="modal-dialog water_dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title" id="myModalLabel">选择数据库表</h4>
+				</div>
+				<div class="modal-body">
+				<div class="input-group">
+			        <input type="text" ng-model="tableName" class="form-control" placeholder="请输入数据库表名称">
+			        <span class="input-group-btn">
+			        	<button class="btn btn-default" type="button" ng-click="select_region()">查询</button>
+			        </span>
+			    </div>
+					<ul id="tableTree" class="ztree ztree_box_modal"></ul>
+				</div>
+				<div class="modal-footer">
+					<a href="javascript:;" class="btn btn-primary btn-o" ng-click="region_modalOk()">
+						<i class="fa fa-check"></i>
+						<span>确 定</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+</div>

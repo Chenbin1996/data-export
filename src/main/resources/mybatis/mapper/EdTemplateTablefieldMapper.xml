@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruxuanwo.data.export.mapper.EdTemplateTablefieldMapper">
+  <resultMap id="BaseResultMap" type="com.ruxuanwo.data.export.domain.EdTemplateTablefield">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="Id" jdbcType="VARCHAR" property="id" />
+    <result column="tableField_id" jdbcType="INTEGER" property="tableFieldId" />
+    <result column="templateField_id" jdbcType="VARCHAR" property="templateFieldId" />
+  </resultMap>
+</mapper>

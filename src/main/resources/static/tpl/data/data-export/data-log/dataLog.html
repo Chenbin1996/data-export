@@ -1,0 +1,46 @@
+<div ng-controller="logController">
+    <div class="bg-light lter b-b wrapper-md">
+        <h1 class="m-n font-thin h3">导入日志</h1>
+    </div>
+    <div class="wrapper-md">
+        <div class="panel panel-default m-all-0">
+            <div class="panel-body">
+                <form class="form-inline" method="get">
+                    <div class="form-item">
+                        <label>模板名称</label>
+                        <input type="text" class="form-control input-short" ng-model="find_name"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary" ng-click="find()">
+                        <i class="fa fa-search"></i>搜索
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <tr>
+                            <th class="wid-10">序号</th>
+                            <th class="wid-15">模板名称</th>
+                            <th class="wid-15">导入数量</th>
+                            <th class="wid-15">导入状态</th>
+                            <th class="wid-20">操作</th>
+                        </tr>
+                        <tr ng-repeat="log in logList | filter:{catchment:selectedCatchment}" ng-init="index=$index+1">
+							<td ng-class-odd="'active'" ng-class-even="'bg-FFF'">{{index + (paginationConf.currentPage-1)*paginationConf.itemsPerPage}}</td>
+                            <td class="remark" ng-class-odd="'active'" ng-class-even="'bg-FFF'">{{log.templateName}}</td>
+                            <td ng-class-odd="'active'" ng-class-even="'bg-FFF'">{{log.totalCount}}</td>
+                            <td ng-class-odd="'active'" ng-class-even="'bg-FFF'">{{log.stateName}}</td>
+                            <td ng-class-odd="'active'" ng-class-even="'bg-FFF'" class="td-tool">
+                                <a class="btn btn-primary btn-xs" ng-click="logDetail(log.id)"><i class="fa fa-info" title="详情"></i></a>
+                                <a class="btn btn-primary btn-xs" ng-click="logToData(log)" ng-if="isToData(log)"><i class="fa fa-edit" title="导入数据"></i></a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <tm-pagination conf="paginationConf"></tm-pagination>
+            </div>
+        </div>
+    </div>
+</div>
