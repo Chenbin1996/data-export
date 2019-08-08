@@ -5,7 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.ruxuanwo.data.export.core.Service;
 import com.ruxuanwo.data.export.domain.EdTemplate;
 import com.ruxuanwo.data.export.dto.EdTemplateDTO;
-import com.ruxuanwo.data.export.config.FieldConfig;
+import com.ruxuanwo.data.export.core.FieldConfig;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.sql.SQLException;
@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * 数据导入模板表-Service接口类
  *
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 public interface EdTemplateService extends Service<EdTemplate, EdTemplateDTO, String> {
@@ -193,4 +193,11 @@ public interface EdTemplateService extends Service<EdTemplate, EdTemplateDTO, St
      * @return
      */
     List<FieldConfig> selectByTemplateId(String templateId);
+
+    /**
+     * 获取所有勾选非空效验的字段
+     * @param templateId
+     * @return
+     */
+    List<String> getNullCheckFileds(String templateId);
 }

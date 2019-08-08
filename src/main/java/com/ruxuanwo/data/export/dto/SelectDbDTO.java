@@ -1,7 +1,7 @@
 package com.ruxuanwo.data.export.dto;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/6/26/0026 14:36
  */
 public class SelectDbDTO {

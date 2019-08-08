@@ -5,7 +5,7 @@ import com.ruxuanwo.data.export.generator.Generator;
 
 /**
  * 字段信息对象
- * @author chenbin
+ * @author ruxuanwo
  */
 public class FieldDTO {
 
@@ -41,6 +41,19 @@ public class FieldDTO {
      * 从外键获取,外键字段
      */
     private String foreignField;
+
+    /**
+     * 是否进行重复性校验
+     */
+    private Integer repeatCheck;
+
+    public Integer getRepeatCheck() {
+        return repeatCheck;
+    }
+
+    public void setRepeatCheck(Integer repeatCheck) {
+        this.repeatCheck = repeatCheck;
+    }
 
     public String getGenerateName() {
         return generateName;

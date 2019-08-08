@@ -1,7 +1,7 @@
 package com.ruxuanwo.data.export.exception;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/7/13/0013 10:16
  */
 public class CheckErrorException extends RuntimeException {

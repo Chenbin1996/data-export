@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.enums;
 /**
  * 导入数据到临时表时数据状态
  *
- * @author chenbin
+ * @author ruxuanwo
  * @date Created on 2018/5/8
  */
 public enum LogStateEnum {

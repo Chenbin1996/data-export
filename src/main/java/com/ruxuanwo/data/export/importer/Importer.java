@@ -1,6 +1,6 @@
 package com.ruxuanwo.data.export.importer;
 
-import com.ruxuanwo.data.export.dto.Data;
+import com.ruxuanwo.data.export.core.Data;
 
 import java.sql.SQLException;
 

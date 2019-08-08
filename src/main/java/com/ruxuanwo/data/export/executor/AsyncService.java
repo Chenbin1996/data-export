@@ -1,12 +1,13 @@
 package com.ruxuanwo.data.export.executor;
 
-import com.ruxuanwo.data.export.config.FieldConfig;
-import com.ruxuanwo.data.export.dto.Line;
+import com.ruxuanwo.data.export.core.FieldConfig;
+import com.ruxuanwo.data.export.core.Line;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/7/13/0013 14:32
  */
 public interface AsyncService {
@@ -17,5 +18,5 @@ public interface AsyncService {
      * @param lineList
      * @param logId
      */
-    void executeAsync(String templateId, List<FieldConfig> headConfig, List<Line> lineList, String logId);
+    Future<String> executeAsync(String templateId, List<FieldConfig> headConfig, List<Line> lineList, String logId);
 }

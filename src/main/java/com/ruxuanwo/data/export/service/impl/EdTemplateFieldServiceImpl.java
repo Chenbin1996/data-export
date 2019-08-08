@@ -4,27 +4,27 @@ package com.ruxuanwo.data.export.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.ruxuanwo.data.export.core.AbstractService;
-import com.ruxuanwo.data.export.check.Client;
-import com.ruxuanwo.data.export.check.Factory;
-import com.ruxuanwo.data.export.constants.Constant;
-import com.ruxuanwo.data.export.dto.Information;
-import com.ruxuanwo.data.export.dto.Parameter;
-import com.ruxuanwo.data.export.domain.EdFieldTools;
 import com.ruxuanwo.data.export.domain.EdTemplateField;
 import com.ruxuanwo.data.export.domain.EdTemplateTablefield;
-import com.ruxuanwo.data.export.domain.EdTools;
-import com.ruxuanwo.data.export.dto.EdTemplateFieldDTO;
 import com.ruxuanwo.data.export.enums.RecordStateEnum;
-import com.ruxuanwo.data.export.exception.CheckErrorException;
 import com.ruxuanwo.data.export.mapper.EdFieldToolsMapper;
-import com.ruxuanwo.data.export.mapper.EdTemplateFieldMapper;
 import com.ruxuanwo.data.export.mapper.EdTemplateMapper;
 import com.ruxuanwo.data.export.mapper.EdTemplateTablefieldMapper;
 import com.ruxuanwo.data.export.service.EdFieldToolsService;
 import com.ruxuanwo.data.export.service.EdTemplateFieldService;
 import com.ruxuanwo.data.export.service.EdTemplateTablefieldService;
 import com.ruxuanwo.data.export.service.EdToolsService;
+import com.ruxuanwo.data.export.core.AbstractService;
+import com.ruxuanwo.data.export.check.Client;
+import com.ruxuanwo.data.export.check.Factory;
+import com.ruxuanwo.data.export.constants.Constant;
+import com.ruxuanwo.data.export.core.Information;
+import com.ruxuanwo.data.export.core.Parameter;
+import com.ruxuanwo.data.export.domain.EdFieldTools;
+import com.ruxuanwo.data.export.domain.EdTools;
+import com.ruxuanwo.data.export.dto.EdTemplateFieldDTO;
+import com.ruxuanwo.data.export.exception.CheckErrorException;
+import com.ruxuanwo.data.export.mapper.EdTemplateFieldMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 /**
  * 模板字段表-ServiceImpl接口实现类
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 @Service
@@ -166,7 +166,7 @@ public class EdTemplateFieldServiceImpl extends AbstractService<EdTemplateField,
      * @param defaultValue 缺省值
      * @param length 长度校验所需长度
      */
-    private void checkDefaultValue(String toolId, String defaultValue, Integer length){
+    private void checkDefaultValue(String toolId, String defaultValue, String length){
         if(defaultValue == null || "".equals(defaultValue)){
             return;
         }
@@ -180,7 +180,7 @@ public class EdTemplateFieldServiceImpl extends AbstractService<EdTemplateField,
         parameter.setType(RecordStateEnum.ERROR.getCode());
         //判断有无长度校验器，有就赋值长度
         if (Constant.LENGCHECK_NAME.equals(edTools.getName())){
-            parameter.setLength(length);
+            parameter.setOther(length);
         }
         //添加实例化校验器
         client.addCheck(Factory.createCheck(edTools.getClassName()));
@@ -215,12 +215,12 @@ public class EdTemplateFieldServiceImpl extends AbstractService<EdTemplateField,
             edFieldTools.setFieldId(fieldId);
 
             String other = toolObject.getString("other");
-            Integer length = 0;
-            edFieldTools.setOther(other);
+//            Integer length = 0;
+//            edFieldTools.setOther(other);
             if (isInteger(other)){
-                length = Integer.parseInt(other);
+//                length = Integer.parseInt(other);
             }
-            this.checkDefaultValue(toolObject.getString("id"), defaultValue, length);
+            this.checkDefaultValue(toolObject.getString("id"), defaultValue, other);
             edFieldToolsService.insert(edFieldTools);
         }
     }

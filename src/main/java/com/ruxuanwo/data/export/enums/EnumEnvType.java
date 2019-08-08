@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.enums;
 /**
  * 配置文件类型
  *
- * @author xiepuyao
+ * @author ruxuanwo
  * @date Created on 2018/1/31
  */
 public enum EnumEnvType {

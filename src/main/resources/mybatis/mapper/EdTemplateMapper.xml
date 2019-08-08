@@ -20,16 +20,17 @@
         <result column="userName" jdbcType="VARCHAR" property="userName"/>
     </resultMap>
 
-    <resultMap id="FieldConfigMap" type="com.ruxuanwo.data.export.config.FieldConfig">
+    <resultMap id="FieldConfigMap" type="com.ruxuanwo.data.export.core.FieldConfig">
         <result column="name" jdbcType="VARCHAR" property="excelName"/>
         <result column="default_value" jdbcType="VARCHAR" property="defaultValue"/>
-        <result column="sort" jdbcType="INTEGER" property="columnName"/>
-        <collection property="toosList" ofType="com.ruxuanwo.data.export.dto.EdToolsDTO"  select="queryByFieldId" column="id">
+        <!-- <result column="sort" jdbcType="INTEGER" property="columnName"/> -->
+        <result column="field_type" jdbcType="INTEGER" property="columnType"/>
+        <collection property="toosList" ofType="com.ruxuanwo.data.export.dto.EdToolsDTO" select="queryByFieldId" column="id">
         </collection>
     </resultMap>
 
     <resultMap id="tableAndFieldMap" type="com.ruxuanwo.data.export.dto.EdTemplateTableDTO">
-        <collection property="fieldList" ofType="com.ruxuanwo.data.export.dto.FieldDTO"  select="queryFieldInform"
+        <collection property="fieldList" ofType="com.ruxuanwo.data.export.dto.FieldDTO" select="queryFieldInform"
                     column="{templateId=templateId,tableName=tableName}">
         </collection>
     </resultMap>
@@ -39,7 +40,7 @@
         <where>
             <if test="appId != null">AND app_id = #{appId} </if>
             <if test="moduleId != null"> AND module_id = #{moduleId} </if>
-            <if test="templateName != null">AND template_name LIKE concat('%', #{templateName}, '%')</if>
+            <if test="templateName != null">AND template_name LIKE concat('%', #{templateName}, '%') escape '/'</if>
         </where>
         ORDER BY create_time DESC
     </select>
@@ -65,7 +66,8 @@
             ed_field_value.`value` AS defaultValue,
             ed_tools.class_name AS generateName,
             ed_foreign_key.table_name AS foreignTable,
-            ed_foreign_key.field AS foreignField
+            ed_foreign_key.field AS foreignField,
+            ed_table_field.repeat_check AS repeatCheck
         FROM
             ed_table_field
         LEFT JOIN ed_template_tablefield ON ed_table_field.Id = ed_template_tablefield.tableField_id
@@ -79,13 +81,39 @@
         AND ed_table_field.table_name = #{tableName}
     </select>
 
-    <select id="selectByTemplateId" resultMap="FieldConfigMap">
-        SELECT
-            *
+  <!--  <select id="selectByTemplateId" resultMap="FieldConfigMap">
+       SELECT
+            etf.*,
+            eaf.field_name,
+            eaf.field_type
         FROM
-            `ed_template_field`
+            `ed_template_field` etf
+            LEFT JOIN ed_template_tablefield ett ON etf.id = ett.templateField_id
+            LEFT JOIN ed_table_field eaf ON ett.tableField_id = eaf.id
         WHERE
-            template_id = #{templateId}
+            etf.template_id =  #{templateId}
+        ORDER BY
+            sort ASC
+    </select> -->
+
+    <select id="selectByTemplateId" resultMap="FieldConfigMap">
+
+        SELECT
+            etf.*,
+            concat( eaf.table_name, '_', eaf.field_name ) AS columnName,
+            eaf.field_name,
+            eaf.field_type
+        FROM
+            `ed_template_field` etf
+            LEFT JOIN ed_template_tablefield ett ON etf.id = ett.templateField_id
+            LEFT JOIN ed_table_field eaf ON ett.tableField_id = eaf.id
+        WHERE
+            etf.template_id =  #{templateId}
+        GROUP BY
+	      etf.id
+        ORDER BY
+            sort ASC
+
     </select>
 
     <select id="queryByFieldId" resultType="com.ruxuanwo.data.export.dto.EdToolsDTO">
@@ -128,23 +156,25 @@
         CREATE TABLE IF NOT EXISTS ${tableName}(
         id VARCHAR(32) NOT NULL,
         log_id VARCHAR(32),
-        <foreach collection="list" item="column"  separator="VARCHAR(255),"
-                 close="VARCHAR(255), PRIMARY KEY (id) ,">
-            ${column.columnName}
+        <foreach collection="list" item="column"  separator=","
+                 close=" , PRIMARY KEY (id) ,">
+            ${column.columnName} VARCHAR(${fieldLength})
         </foreach>
         state INT,
-        message VARCHAR(255)
+        wrong_field VARCHAR (200),
+        message VARCHAR(500),
+        sort_order int(5)
         ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
     </update>
 
     <update id="createNewDataTable" parameterType="java.util.HashMap">
         CREATE TABLE IF NOT EXISTS ${tableName}(
-        id VARCHAR(32) NOT NULL,
+        id int(32) NOT NULL AUTO_INCREMENT,
         log_id VARCHAR(32),
         temporary_id VARCHAR(32),
-        <foreach collection="list" item="column" separator="VARCHAR(255),"
-                 close="VARCHAR(255), PRIMARY KEY (id)">
-            ${column.columnName}
+        <foreach collection="list" item="column" separator=","
+                 close=" , PRIMARY KEY (id)">
+            ${column.columnName}  ${column.columnType}
         </foreach>
         ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
     </update>
@@ -159,16 +189,17 @@
 
     <insert id="oldTableInsert" parameterType="java.util.HashMap">
         INSERT INTO ${tableName}(
-        log_id,state,
+        log_id,state,sort_order,
         <foreach collection="columns" item="column" separator="," close=",">
             ${column.columnName}
         </foreach>
-        id,message)
+        id,message, wrong_field)
         VALUES
         <foreach collection="data" item="value"  separator="," >
             (
               #{logId},
               ${value.state},
+              ${value.sortOrder},
               ${value.tempSql}
             )
         </foreach>
@@ -176,7 +207,7 @@
 
     <insert id="newTableInsert" parameterType="java.util.HashMap">
         INSERT INTO ${tableName}(
-        id,log_id,
+          log_id,
         <foreach collection="columns" item="column" separator="," close=",">
             ${column.columnName}
         </foreach>
@@ -184,7 +215,6 @@
         VALUES
         <foreach collection="data" item="value"  separator="," >
             (
-            REPLACE(UUID(),'-',''),
             #{logId},
             ${value.tempNewSql}
             )
@@ -208,7 +238,7 @@
     <select id="findTemByLogId" resultType="java.util.HashMap">
         SELECT
         <foreach collection="dataMap" index="key" item="value"  separator="," >
-            ${key} AS ${value}
+            ${key} AS #{value}
         </foreach>
         FROM
           ${tableName}
@@ -217,6 +247,7 @@
         <if test="dataType != null">
           AND  state = #{dataType}
         </if>
+        ORDER BY sort_order
     </select>
 
     <delete id="deleteTemporary">
@@ -232,14 +263,15 @@
         SHOW TABLES LIKE #{tableName}
     </select>
 
-    <select id="findNewTempData" resultType="java.util.HashMap">
+    <select id="findNewTempData" resultType="java.util.Map">
         SELECT
           <foreach collection="map" index="key" item="value" separator=",">
-              ${value} AS ${key}
+              ${value} AS #{key}
           </foreach>
         FROM
           ${templateId}
         WHERE log_id = #{logId}
+        ORDER BY id
     </select>
 
     <select id="getTemplateImport" resultType="java.lang.String" parameterType="java.lang.String">
@@ -253,6 +285,21 @@
         ed_template_tool.template_id = ed_template.id
     AND ed_template_tool.tool_id = ed_tools.id
     AND ed_template.id = #{templateId}
+    </select>
+    <select id="getNullCheckFileds" resultType="java.lang.String">
+        SELECT
+            etf.`NAME`
+        FROM
+            ed_template et,
+            ed_template_field etf,
+            ed_field_tools eft,
+            ed_tools ets
+        WHERE
+            et.id = etf.template_id
+            AND etf.id = eft.field_id
+            AND eft.tool_id = ets.id
+            AND ets.id = #{toolId}
+            AND et.id = #{templateId}
     </select>
 
 </mapper>

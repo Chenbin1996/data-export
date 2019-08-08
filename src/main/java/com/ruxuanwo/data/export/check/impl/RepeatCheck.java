@@ -2,18 +2,18 @@ package com.ruxuanwo.data.export.check.impl;
 
 import com.ruxuanwo.data.export.check.Check;
 import com.ruxuanwo.data.export.check.Client;
-import com.ruxuanwo.data.export.dto.Information;
-import com.ruxuanwo.data.export.dto.Parameter;
+import com.ruxuanwo.data.export.core.Information;
+import com.ruxuanwo.data.export.core.Parameter;
 import org.springframework.stereotype.Component;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/5/17/0017 8:57
  */
 @Component("repeatCheck")
 public class RepeatCheck implements Check {
     @Override
-    public Information validate(Client client,Parameter parameter) {
+    public Information validate(Client client, Parameter parameter) {
         //去重效验，待定是否启动，防止特定数据无法重复导入
         return null;
     }

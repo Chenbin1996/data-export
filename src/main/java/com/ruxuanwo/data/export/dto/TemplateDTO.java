@@ -1,7 +1,7 @@
 package com.ruxuanwo.data.export.dto;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/4/24/0024 19:28
  */
 public class TemplateDTO {

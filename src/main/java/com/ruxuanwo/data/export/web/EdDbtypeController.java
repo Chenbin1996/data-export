@@ -2,10 +2,10 @@ package com.ruxuanwo.data.export.web;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.ruxuanwo.data.export.utils.ResponseMsgUtil;
-import com.ruxuanwo.data.export.utils.Result;
 import com.ruxuanwo.data.export.domain.EdDbtype;
 import com.ruxuanwo.data.export.service.EdDbtypeService;
+import com.ruxuanwo.data.export.utils.ResponseMsgUtil;
+import com.ruxuanwo.data.export.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 数据库类型表-Controller类
  *
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 @Api(description = "数据库类型表")

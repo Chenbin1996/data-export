@@ -23,7 +23,7 @@ import java.util.*;
 /**
  * 工具表-Controller类
  *
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 @Api(description = "工具表")
@@ -32,7 +32,6 @@ import java.util.*;
 public class EdToolsController {
     @Resource
     private EdToolsService edToolsService;
-
     @ApiOperation(value = "新增", notes = "单表新增")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", name = "name", value = "校验工具名称", required = true, dataType = "String"),
@@ -46,15 +45,15 @@ public class EdToolsController {
                                @RequestParam(required = true) String className,
                                @RequestParam(required = false) String description,
                                HttpServletRequest request) {
+        String userId = "1";
         EdTools edTools = new EdTools();
         edTools.setName(name);
         edTools.setType(type);
         edTools.setClassName(className);
         edTools.setDescription(description);
         edTools.setCreateTime(new Date());
-        edTools.setCreator("1");
-        Integer maxSort = edToolsService.findMaxSort();
-        edTools.setSortOrder(maxSort == null ? 1 : maxSort + 1);
+        edTools.setCreator(userId);
+        edTools.setSortOrder(edToolsService.findMaxSort() + 1);
         edToolsService.insert(edTools);
         return ResponseMsgUtil.success(edTools);
     }
@@ -97,6 +96,7 @@ public class EdToolsController {
     @GetMapping("/detail")
     public Result<EdToolsDTO> detail(@RequestParam(required = true) String id) {
         EdToolsDTO edToolsDTO = edToolsService.findDtoById(id);
+
         edToolsDTO.setTypeName(ToolTypeEnum.findName(edToolsDTO.getType()));
         return ResponseMsgUtil.success(edToolsDTO);
     }

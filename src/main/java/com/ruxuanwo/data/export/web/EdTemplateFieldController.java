@@ -1,19 +1,19 @@
 package com.ruxuanwo.data.export.web;
 
-import com.ruxuanwo.data.export.utils.ResponseMsgUtil;
-import com.ruxuanwo.data.export.utils.Result;
 import com.ruxuanwo.data.export.constants.Constant;
 import com.ruxuanwo.data.export.domain.EdTableField;
 import com.ruxuanwo.data.export.domain.EdTemplateField;
 import com.ruxuanwo.data.export.dto.EdTemplateFieldDTO;
 import com.ruxuanwo.data.export.dto.TemplateDTO;
-import com.ruxuanwo.data.export.enums.CheckFailEnum;
-import com.ruxuanwo.data.export.enums.ValueTypeEnum;
-import com.ruxuanwo.data.export.mapper.EdTemplateFieldMapper;
 import com.ruxuanwo.data.export.service.EdLogService;
 import com.ruxuanwo.data.export.service.EdTableFieldService;
 import com.ruxuanwo.data.export.service.EdTemplateFieldService;
 import com.ruxuanwo.data.export.service.EdTemplateService;
+import com.ruxuanwo.data.export.utils.ResponseMsgUtil;
+import com.ruxuanwo.data.export.utils.Result;
+import com.ruxuanwo.data.export.enums.CheckFailEnum;
+import com.ruxuanwo.data.export.enums.ValueTypeEnum;
+import com.ruxuanwo.data.export.mapper.EdTemplateFieldMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * 模板字段表-Controller类
  *
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 @Api(description = "模板字段表")
@@ -63,6 +63,43 @@ public class EdTemplateFieldController {
     public Result<TemplateDTO> add(@RequestParam(required = true) String vo, @RequestParam(required = true) String id) {
         edTemplateFieldService.add(vo, id);
         return ResponseMsgUtil.success(null);
+    }
+
+    @ApiOperation(value = "新增", notes = "单表新增")
+    @PostMapping("/addBody")
+    public Result<TemplateDTO> add(@RequestBody(required = true) FieldReceiver receiver) {
+        edTemplateFieldService.add(receiver.getStringFields(), receiver.getId());
+        return ResponseMsgUtil.success(null);
+    }
+
+    /**
+     * 字段接收类
+     */
+    private static class FieldReceiver{
+        /**
+         * id
+         */
+        private String id;
+        /**
+         * json字段
+         */
+        private String stringFields;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getStringFields() {
+            return stringFields;
+        }
+
+        public void setStringFields(String stringFields) {
+            this.stringFields = stringFields;
+        }
     }
 
     @ApiOperation(value = "删除", notes = "单表删除")

@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 public interface EdDbtypeMapper extends Mapper<EdDbtype> {
     /**

@@ -1,14 +1,14 @@
 package com.ruxuanwo.data.export.mapper;
 
 
-import com.ruxuanwo.data.export.core.Mapper;
 import com.ruxuanwo.data.export.domain.EdTemplateField;
 import com.ruxuanwo.data.export.dto.EdTemplateFieldDTO;
+import com.ruxuanwo.data.export.core.Mapper;
 
 import java.util.List;
 
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 public interface EdTemplateFieldMapper extends Mapper<EdTemplateField> {
 

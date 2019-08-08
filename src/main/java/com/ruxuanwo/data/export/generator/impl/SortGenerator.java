@@ -1,6 +1,6 @@
 package com.ruxuanwo.data.export.generator.impl;
 
-import com.ruxuanwo.data.export.dto.GeneratorData;
+import com.ruxuanwo.data.export.core.GeneratorData;
 import com.ruxuanwo.data.export.generator.Generator;
 import com.ruxuanwo.data.export.redis.RedisClient;
 import com.ruxuanwo.data.export.utils.DataBaseUtil;
@@ -8,11 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
-import java.util.HashMap;
 
 /**
  * 排序号生成器
- * @author chenbin
+ * @author ruxuanwo
  */
 @Component
 public class SortGenerator implements Generator {
@@ -23,7 +22,7 @@ public class SortGenerator implements Generator {
     private static final String SQL_1 = "select * from ";
     private static final String SQL_2 = " order by ";
     private static final String SQL_3 = " desc limit 1";
-    private static final int INCREASE = 8;
+    private static final int INCREASE = 1;
     private static final String SEPARATED = "_";
     private static final int REDIS_TIME = 120;
 
@@ -37,13 +36,14 @@ public class SortGenerator implements Generator {
         }else {
             String sql = SQL_1 + data.getTableName() + SQL_2 + data.getFieldName() + SQL_3;
             Connection connection = data.getConnection();
-            sort = DataBaseUtil.selectPrepare(connection, sql, new HashMap<>(1), data.getFieldName());
+            sort = DataBaseUtil.selectPrepare(connection, sql, null, data.getFieldName());
             if(sort == null ){
                 sort = "1";
             }
         }
-        sort = (Integer.parseInt(sort.toString()) + INCREASE) + "";
+        sort = (Double.parseDouble(sort.toString()) + INCREASE) + "";
         redisClient.set(key, sort,REDIS_TIME);
         return sort;
     }
+
 }

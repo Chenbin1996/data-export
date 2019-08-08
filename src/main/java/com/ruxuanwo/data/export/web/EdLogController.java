@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * 数据导入日志表-Controller类
  *
- * @author chenbin on 2018/05/08
+ * @author ruxuanwo on 2018/05/08
  * @version 3.0.0
  */
 @Api(description = "数据导入日志表")

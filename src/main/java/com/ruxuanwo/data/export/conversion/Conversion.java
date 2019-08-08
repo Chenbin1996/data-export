@@ -1,12 +1,12 @@
 package com.ruxuanwo.data.export.conversion;
 
-import com.ruxuanwo.data.export.dto.Information;
-import com.ruxuanwo.data.export.dto.Parameter;
+import com.ruxuanwo.data.export.core.Information;
+import com.ruxuanwo.data.export.core.Parameter;
 
 /**
  * 转换器接口
  *
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/7/5/0005 14:00
  */
 public interface Conversion {

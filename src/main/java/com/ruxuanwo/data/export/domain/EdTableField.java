@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.domain;
 import javax.persistence.*;
 import java.io.Serializable;
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 @Table(name = "ed_table_field")
 public class EdTableField implements Serializable {
@@ -26,6 +26,9 @@ public class EdTableField implements Serializable {
 
     @Column(name = "template_id")
     private String templateId;
+
+    @Column(name = "repeat_check")
+    private Integer repeatCheck;
 
     private static final long serialVersionUID = 1L;
 
@@ -93,6 +96,14 @@ public class EdTableField implements Serializable {
 
     public void setTemplateId(String templateId) {
         this.templateId = templateId;
+    }
+
+    public Integer getRepeatCheck() {
+        return repeatCheck;
+    }
+
+    public void setRepeatCheck(Integer repeatCheck) {
+        this.repeatCheck = repeatCheck;
     }
 
     @Override

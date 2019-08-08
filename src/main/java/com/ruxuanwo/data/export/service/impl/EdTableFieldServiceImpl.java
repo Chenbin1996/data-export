@@ -3,17 +3,17 @@ package com.ruxuanwo.data.export.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.ruxuanwo.data.export.core.AbstractService;
 import com.ruxuanwo.data.export.domain.EdFieldGenerator;
-import com.ruxuanwo.data.export.domain.EdFieldValue;
 import com.ruxuanwo.data.export.domain.EdForeignKey;
 import com.ruxuanwo.data.export.domain.EdTableField;
-import com.ruxuanwo.data.export.dto.EdTableFieldDTO;
 import com.ruxuanwo.data.export.mapper.EdTableFieldMapper;
 import com.ruxuanwo.data.export.service.EdFieldGeneratorService;
-import com.ruxuanwo.data.export.service.EdFieldValueService;
 import com.ruxuanwo.data.export.service.EdForeignKeyService;
 import com.ruxuanwo.data.export.service.EdTableFieldService;
+import com.ruxuanwo.data.export.core.AbstractService;
+import com.ruxuanwo.data.export.domain.EdFieldValue;
+import com.ruxuanwo.data.export.dto.EdTableFieldDTO;
+import com.ruxuanwo.data.export.service.EdFieldValueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * 导入字段表-ServiceImpl接口实现类
- * @author ChenBin on 2018/06/22
+ * @author ruxuanwo on 2018/06/22
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -50,6 +50,7 @@ public class EdTableFieldServiceImpl extends AbstractService<EdTableField, EdTab
             String tableName = object.getString("tableName");
             String fieldName = object.getString("fieldName");
             String fieldType = object.getString("fieldType");
+            Integer repeatCheck = object.getInteger("repeatCheck");
             //赋值导入字段表参数
             edTableField = new EdTableField();
             edTableField.setTableName(tableName);
@@ -57,6 +58,7 @@ public class EdTableFieldServiceImpl extends AbstractService<EdTableField, EdTab
             edTableField.setType(type);
             edTableField.setFieldType(fieldType);
             edTableField.setTemplateId(tempId);
+            edTableField.setRepeatCheck(repeatCheck);
             //判断有无ID，有更新，没有新增
             if (id == null || "".equals(id)){
                 //新增操作

@@ -2,7 +2,7 @@ package com.ruxuanwo.data.export.enums;
 
 /**
  * 主键生成方式枚举
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/6/25/0025 18:26
  */
 public enum GeneratorEnum {

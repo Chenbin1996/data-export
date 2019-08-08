@@ -5,7 +5,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @author chenbin on 2018/05/08
+ * @author ruxuanwo on 2018/05/08
  * @version 3.0.0
  */
 @Table(name = "ed_log")

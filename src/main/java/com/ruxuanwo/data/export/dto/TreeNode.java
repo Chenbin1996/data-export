@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 树形数据DTO，用于前端插件zTree对应属性
  *
- * @author chenbin
+ * @author ruxuanwo
  */
 public class TreeNode implements Serializable {
 

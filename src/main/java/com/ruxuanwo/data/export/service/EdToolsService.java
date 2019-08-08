@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * 工具表-Service接口类
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 public interface EdToolsService extends Service<EdTools, EdToolsDTO, String> {

@@ -1,9 +1,9 @@
 package com.ruxuanwo.data.export.conversion.impl;
 
+import com.ruxuanwo.data.export.conversion.AbstractConversion;
 import com.ruxuanwo.data.export.conversion.Conversion;
-import com.ruxuanwo.data.export.dto.Information;
-import com.ruxuanwo.data.export.dto.Parameter;
-import com.ruxuanwo.data.export.enums.RecordStateEnum;
+import com.ruxuanwo.data.export.core.Information;
+import com.ruxuanwo.data.export.core.Parameter;
 import com.ruxuanwo.data.export.exception.ConversionException;
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
@@ -17,22 +17,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/8/28/0028 8:42
  */
 @Component("nameConversion")
-public class NameConversion implements Conversion {
+public class NameConversion extends AbstractConversion implements Conversion {
 
     @Override
     public Information conversion(Parameter parameter) {
-        Information information = new Information();
-        //转换成拼音
-        String userName = this.getName(parameter.getData());
-        information.setData(userName);
-        information.setMsg(RecordStateEnum.RIGHT.getName());
-        information.setState(RecordStateEnum.RIGHT.getCode());
-        information.setType(parameter.getType());
-        return information;
+        return success(parameter.getType(), this.getName(parameter.getData()));
     }
 
     private final String getName(String name){

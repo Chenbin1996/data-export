@@ -2,15 +2,13 @@ package com.ruxuanwo.data.export.filter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 public class ServiceFilter implements Filter {
 
@@ -26,11 +24,8 @@ public class ServiceFilter implements Filter {
         resp.setHeader("Access-Control-Allow-Origin", "*");
         resp.setHeader("Access-Control-Allow-Credentials", "true");
         resp.setHeader("Access-Control-Allow-Methods", "*");
-        resp.setHeader("Access-Control-Allow-Headers", req.getHeader("Access-Control-Request-Headers"));
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type,Access-Token");
         resp.setHeader("Access-Control-Expose-Headers", "*");
-        if (req.getMethod().equals(RequestMethod.OPTIONS.name())) {
-            resp.setStatus(HttpStatus.OK.value());
-        }
         filterChain.doFilter(req, resp);
 
 

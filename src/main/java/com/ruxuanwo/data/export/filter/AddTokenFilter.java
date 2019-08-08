@@ -1,7 +1,7 @@
 package com.ruxuanwo.data.export.filter;
 
-
 import com.ruxuanwo.data.export.constants.Constant;
+import com.ruxuanwo.data.export.enums.EnumEnvType;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.*;
@@ -10,10 +10,13 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 
 /**
- * @author xiepuyao
+ * @author ruxuanwo
  * @date Created on 2018/5/22
  */
 public class AddTokenFilter implements Filter {
+
+    ///admin账号
+///    private static final String DEFAULT_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJsb2dpblRpbWUiOjE1MjY5ODcxMDQ0OTMsImFwcElkIjoiUkwwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VySWQiOiIxIn0.Tlz6zEumvCK3HvNJM_CDncBDxtO8FG-kR-TTdpuoO5U";
 
     /**
      * superAdmin
@@ -34,7 +37,8 @@ public class AddTokenFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        if (profilesActive == null || !"dev".equalsIgnoreCase(profilesActive)) {
+//        int i= 2 / 0;
+        if (profilesActive == null || !EnumEnvType.DEV.toString().equalsIgnoreCase(profilesActive)) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }

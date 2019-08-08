@@ -10,7 +10,7 @@ import java.security.SecureRandom;
 /**
  * DES加密解密工具类
  *
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/5/4/0004 11:49
  */
 public class CryptoUtil {

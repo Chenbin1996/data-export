@@ -3,7 +3,7 @@ import com.ruxuanwo.data.export.domain.EdFieldGenerator;
 
 /**
  * 字段生成器关联表-DTO数据传输对象类
- * @author ChenBin on 2018/06/22
+ * @author ruxuanwo on 2018/06/22
  */
 public class EdFieldGeneratorDTO extends EdFieldGenerator {
     @Override

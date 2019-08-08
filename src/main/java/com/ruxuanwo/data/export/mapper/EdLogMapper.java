@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * @author chenbin on 2018/05/08
+ * @author ruxuanwo on 2018/05/08
  * @version 3.0.0
  */
 public interface EdLogMapper extends Mapper<EdLog> {

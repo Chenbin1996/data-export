@@ -1,23 +1,23 @@
 package com.ruxuanwo.data.export.web;
 
-import com.ruxuanwo.data.export.utils.ResponseMsgUtil;
-import com.ruxuanwo.data.export.utils.Result;
 import com.ruxuanwo.data.export.constants.Constant;
 import com.ruxuanwo.data.export.domain.EdTableField;
 import com.ruxuanwo.data.export.domain.EdTemplateTable;
-import com.ruxuanwo.data.export.domain.EdTools;
 import com.ruxuanwo.data.export.dto.EdTableFieldDTO;
 import com.ruxuanwo.data.export.dto.EdTemplateDbconfigDTO;
 import com.ruxuanwo.data.export.dto.SelectDbDTO;
-import com.ruxuanwo.data.export.enums.GeneratorEnum;
 import com.ruxuanwo.data.export.enums.ToolTypeEnum;
-import com.ruxuanwo.data.export.enums.ValueTypeEnum;
 import com.ruxuanwo.data.export.mapper.EdTemplateDbconfigMapper;
 import com.ruxuanwo.data.export.mapper.EdTemplateTableMapper;
 import com.ruxuanwo.data.export.service.EdTableFieldService;
 import com.ruxuanwo.data.export.service.EdToolsService;
 import com.ruxuanwo.data.export.utils.CryptoUtil;
 import com.ruxuanwo.data.export.utils.DataBaseUtil;
+import com.ruxuanwo.data.export.utils.ResponseMsgUtil;
+import com.ruxuanwo.data.export.utils.Result;
+import com.ruxuanwo.data.export.domain.EdTools;
+import com.ruxuanwo.data.export.enums.GeneratorEnum;
+import com.ruxuanwo.data.export.enums.ValueTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tk.mybatis.mapper.entity.Condition;
@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * 导入字段表-Controller类
- * @author ChenBin on 2018/06/22
+ * @author ruxuanwo on 2018/06/22
  */
 @RestController
 @RequestMapping("/edTableField")
@@ -47,6 +47,42 @@ public class EdTableFieldController {
     public Result<EdTableField> add(String jsonData, String tempId) {
         EdTableField edTableField = edTableFieldService.add(jsonData, tempId);
         return ResponseMsgUtil.success(edTableField);
+    }
+
+    @PostMapping("/addPost")
+    public Result<EdTableField> add(@RequestBody FieldReceiver fieldReceiver) {
+        EdTableField edTableField = edTableFieldService.add(fieldReceiver.getStringFields(), fieldReceiver.getId());
+        return ResponseMsgUtil.success(edTableField);
+    }
+
+    /**
+     * 字段接收类
+     */
+    private static class FieldReceiver{
+        /**
+         * id
+         */
+        private String id;
+        /**
+         * json字段
+         */
+        private String stringFields;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getStringFields() {
+            return stringFields;
+        }
+
+        public void setStringFields(String stringFields) {
+            this.stringFields = stringFields;
+        }
     }
 
 

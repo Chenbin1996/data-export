@@ -6,7 +6,7 @@ import java.lang.String;
 
 /**
  * 模版字段导入字段关联表-Service接口类
- * @author ChenBin on 2018/06/22
+ * @author ruxuanwo on 2018/06/22
  */
 public interface EdTemplateTablefieldService extends Service<EdTemplateTablefield, EdTemplateTablefieldDTO, String> {
 

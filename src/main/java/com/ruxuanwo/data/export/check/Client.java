@@ -1,15 +1,15 @@
 package com.ruxuanwo.data.export.check;
 
 
-import com.ruxuanwo.data.export.dto.Information;
-import com.ruxuanwo.data.export.dto.Parameter;
+import com.ruxuanwo.data.export.core.Information;
+import com.ruxuanwo.data.export.core.Parameter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *  启动效验器
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/5/2/0002 10:29
  */
 public class Client {

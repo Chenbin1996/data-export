@@ -1,8 +1,9 @@
 package com.ruxuanwo.data.export.exception;
 
+import com.ruxuanwo.data.export.constants.Constant;
+import com.ruxuanwo.data.export.utils.RequestUtil;
 import com.ruxuanwo.data.export.utils.ResponseMsgUtil;
 import com.ruxuanwo.data.export.utils.Result;
-import com.ruxuanwo.data.export.utils.RequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +11,6 @@ import org.springframework.boot.autoconfigure.web.AbstractErrorController;
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +21,7 @@ import java.sql.SQLException;
  * 全局异常处理
  * 一般情况下，方法都有异常处理机制，但不能排除有个别异常没有处理，导致返回到前台，因此在这里做一个异常拦截，统一处理那些未被处理过的异常
  *
- * @author xiepuyao
+ * @author ruxuanwo
  * @date Created on 2018/5/23
  */
 @ControllerAdvice
@@ -50,19 +50,19 @@ public class GlobalExceptionHandler extends AbstractErrorController {
     @ExceptionHandler(SqlErrorException.class)
     public Result<String> sqlErrorException(HttpServletRequest req, HttpServletResponse rsp, Exception ex) {
         LOGGER.error("!!! request uri:{} from {} server exception:{}", req.getRequestURI(), RequestUtil.getIpAddress(req), ex == null ? null : ex);
-        return ResponseMsgUtil.builderResponse(1002, ex.getMessage(), null);
+        return ResponseMsgUtil.builderResponse(Constant.RESULT_CODE_EXCEPTION, ex.getMessage(), null);
     }
 
     @ExceptionHandler(CheckErrorException.class)
     public Result<String> checkErrorException(HttpServletRequest req, HttpServletResponse rsp, Exception ex){
         LOGGER.error("!!! request uri:{} from {} server exception:{}", req.getRequestURI(), RequestUtil.getIpAddress(req), ex == null ? null : ex);
-        return ResponseMsgUtil.builderResponse(1002, ex.getMessage(), null);
+        return ResponseMsgUtil.builderResponse(Constant.RESULT_CODE_EXCEPTION, ex.getMessage(), null);
     }
 
     @ExceptionHandler(ConversionException.class)
     public Result<String> ConversionException(HttpServletRequest req, HttpServletResponse rsp, Exception ex){
         LOGGER.error("!!! request uri:{} from {} server exception:{}", req.getRequestURI(), RequestUtil.getIpAddress(req), ex == null ? null : ex);
-        return ResponseMsgUtil.builderResponse(1002, ex.getMessage(), null);
+        return ResponseMsgUtil.builderResponse(Constant.RESULT_CODE_EXCEPTION, ex.getMessage(), null);
     }
 
 
@@ -79,7 +79,7 @@ public class GlobalExceptionHandler extends AbstractErrorController {
     @ExceptionHandler(SQLException.class)
     public Result<String> sqlException(HttpServletRequest req, HttpServletResponse rsp, Exception ex) {
         LOGGER.error("!!! request uri:{} from {} server exception:{}", req.getRequestURI(), RequestUtil.getIpAddress(req), ex == null ? null : ex);
-        return ResponseMsgUtil.builderResponse(1002, ex.getMessage(), null);
+        return ResponseMsgUtil.builderResponse(Constant.RESULT_CODE_EXCEPTION, ex.getMessage(), null);
     }
 
 
@@ -96,7 +96,7 @@ public class GlobalExceptionHandler extends AbstractErrorController {
     @ExceptionHandler(Exception.class)
     public Result<String> serverError(HttpServletRequest req, HttpServletResponse rsp, Exception ex) throws Exception {
         LOGGER.error("!!! request uri:{} from {} server exception:{}", req.getRequestURI(), RequestUtil.getIpAddress(req), ex == null ? null : ex);
-        return ResponseMsgUtil.builderResponse(1002, ex.getMessage(), null);
+        return ResponseMsgUtil.builderResponse(Constant.RESULT_CODE_EXCEPTION, ex.getMessage(), null);
     }
 
 
@@ -113,7 +113,7 @@ public class GlobalExceptionHandler extends AbstractErrorController {
     @ExceptionHandler(NoHandlerFoundException.class)
     public Result<String> notFound(HttpServletRequest request, HttpServletResponse response, Exception ex) throws Exception {
         LOGGER.error("!!! request uri:{} from {} not found exception:{}", request.getRequestURI(), RequestUtil.getIpAddress(request), ex);
-        return ResponseMsgUtil.builderResponse(404, "请求的资源不存在!", null);
+        return ResponseMsgUtil.builderResponse(Constant.RESULT_CODE_NO_EXISTS, "请求的资源不存在!", null);
     }
 
 

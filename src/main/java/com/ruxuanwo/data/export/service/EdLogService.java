@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * 数据导入日志表-Service接口类
- * @author chenbin on 2018/05/08
+ * @author ruxuanwo on 2018/05/08
  * @version 3.0.0
  */
 public interface EdLogService extends Service<EdLog, EdLogDTO, String> {

@@ -1,23 +1,28 @@
 package com.ruxuanwo.data.export.utils;
 
 import com.ruxuanwo.data.export.constants.ExcelConstant;
+import com.ruxuanwo.data.export.core.ExcelData;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/5/3/0003 11:37
  */
+@Component
 public class ExportUtil {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(ExportUtil.class);
 
     /**
      * 生成excel模板
@@ -43,6 +48,93 @@ public class ExportUtil {
         }
         return workbook;
     }
+
+    /**
+     * 生成excel
+     *
+     * @param excelData 模板数据
+     * @return excel
+     */
+    public static Workbook export(ExcelData excelData) {
+        Workbook workbook = new HSSFWorkbook();
+        Sheet sheet = workbook.createSheet();
+        CellStyle cellStyle = getStyle(workbook, ExcelConstant.HUAWENSONG_TYPE, null, true, ExcelConstant.HEAD_FONTHEIGHT, false);
+        //当前行
+        int nowRow = 0;
+        //数据的行数和列数
+        int rowNum = excelData.getBody().length;
+        int column = excelData.getHead().length;
+        Row row;
+        Cell cell;
+        int notData = 1;
+        if (StringUtils.isNotEmpty(excelData.getTitle())){
+            notData++;
+            //标题
+            row = sheet.createRow(nowRow++);
+            //合并单元格
+            sheet.addMergedRegion(new CellRangeAddress(0,0,0,column - 1));
+            cell = row.createCell(0);
+            cell.setCellValue(excelData.getTitle());
+            cell.setCellStyle(cellStyle);
+        }
+
+        cellStyle = getStyle(workbook, ExcelConstant.SONG_TYPE, null, true, ExcelConstant.DEFAULT_FONTHEIGHT, false);
+        //行首
+        row = sheet.createRow(nowRow++);
+        for (int j = 0; j < column; j++) {
+            sheet.setColumnWidth(j, excelData.getHead()[j].getBytes().length * 3 * 256);
+            sheet.autoSizeColumn(j);
+            cellStyle.setWrapText(true);
+            sheet.setDefaultColumnStyle(j, cellStyle);
+            cell = row.createCell(j);
+            cell.setCellValue(excelData.getHead()[j]);
+            cell.setCellStyle(cellStyle);
+        }
+
+        cellStyle = getStyle(workbook, ExcelConstant.SONG_TYPE, null, false, ExcelConstant.BODY_FONTHEIGHT, true);
+        //内容
+        for ( ; nowRow < rowNum + notData; nowRow++) {
+            row = sheet.createRow(nowRow);
+            for (int j = 0; j < column; j++) {
+                cell = row.createCell(j);
+                cell.setCellValue(excelData.getBody()[nowRow - notData][j].toString());
+                cell.setCellStyle(cellStyle);
+            }
+        }
+        return workbook;
+    }
+
+    /**
+     * 设置样式
+     *
+     * @param workbook   excel
+     * @param fontName   字体名称
+     * @param color      颜色
+     * @param isBold     加粗
+     * @param fontHeight 字号
+     * @return
+     */
+    private static CellStyle getStyle(Workbook workbook, String fontName, Short color, Boolean isBold, Short fontHeight, Boolean isWrapText) {
+        CellStyle cellStyle = workbook.createCellStyle();
+        DataFormat format = workbook.createDataFormat();
+        cellStyle.setDataFormat(format.getFormat("@"));
+        cellStyle.setFillForegroundColor(IndexedColors.AQUA.getIndex());
+        //水平居中
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        //垂直居中
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        //自动换行
+        cellStyle.setWrapText(isWrapText != null && isWrapText);
+        Font font = workbook.createFont();
+        font.setFontName(StringUtils.isEmpty(fontName) ? ExcelConstant.FONTNAME : fontName);
+        font.setFontHeightInPoints(fontHeight == null ? ExcelConstant.DEFAULT_FONTHEIGHT : fontHeight);
+        font.setColor(color == null ? ExcelConstant.COLOR_BLACK : color);
+        font.setBold(isBold != null && isBold);
+        cellStyle.setFont(font);
+        return cellStyle;
+    }
+
+
 
     /**
      * 字段飞空则字体颜色为红色
@@ -78,18 +170,7 @@ public class ExportUtil {
      * @param color    字体颜色    默认黑色
      */
     private static void setFont(Workbook workbook, Cell cell, String fontName, Short color) {
-        fontName = fontName == null ? ExcelConstant.FONTNAME : fontName;
-        color = color == null ? ExcelConstant.COLOR_BLACK : color;
-        CellStyle style = workbook.createCellStyle();
-        DataFormat format = workbook.createDataFormat();
-        style.setDataFormat(format.getFormat("@"));
-        style.setFillForegroundColor(IndexedColors.AQUA.getIndex());
-        style.setAlignment(HorizontalAlignment.CENTER);
-        Font font = workbook.createFont();
-        font.setFontName(fontName);
-        font.setFontHeightInPoints((short) 12);
-        font.setColor(color);
-        style.setFont(font);
+        CellStyle style = getStyle(workbook, fontName, color, false, (short) 12, false);
         cell.setCellStyle(style);
     }
 
@@ -100,10 +181,10 @@ public class ExportUtil {
      * @param path   文件全称
      * @return 数据集合
      */
-    public static List<List<String>> importExcel(InputStream stream, String path,int size) {
+    public static List<List<String>> importExcel(InputStream stream, String path, int size) {
         Workbook workbook = getWorkBook(stream, path);
         List<Sheet> sheets = getSheets(workbook);
-        return readExcel(sheets,size);
+        return readExcel(sheets, size);
     }
 
     /**
@@ -145,7 +226,7 @@ public class ExportUtil {
      * @param sheets sheet集合
      * @return 解析后的数据
      */
-    private static List<List<String>> readExcel(List<Sheet> sheets,int size) {
+    private static List<List<String>> readExcel(List<Sheet> sheets, int size) {
         List<List<String>> dataList = new ArrayList<>();
         List<String> data;
         Row row;
@@ -165,17 +246,40 @@ public class ExportUtil {
                 data = new ArrayList<>();
                 for (int j = 0; j < size; j++) {
                     cell = row.getCell(j);
-                    if (cell != null){
+                    if (cell != null) {
                         cell.setCellType(CellType.STRING);
-                        data.add(cell.getStringCellValue());
-                    }else {
+                        //去除首尾空格
+                        String cellValue = cell.getStringCellValue();
+                        data.add(StringUtils.isBlank(cellValue) ? null : cellValue.trim());
+                    } else {
                         data.add("");
                     }
                 }
-                dataList.add(data);
+                if (! isEmptyList(data)){
+                    dataList.add(data);
+                }
             }
         }
         return dataList;
+    }
+
+    /**
+     * 判断集合是否为空
+     * @param list
+     * @return
+     */
+    private static boolean isEmptyList(List<String> list){
+        if (CollectionUtils.isEmpty(list)){
+            return true;
+        }
+        boolean flag = true;
+        for (String data : list) {
+            if (StringUtils.isNotEmpty(data)){
+                flag = false;
+                break;
+            }
+        }
+        return flag;
     }
 
 }

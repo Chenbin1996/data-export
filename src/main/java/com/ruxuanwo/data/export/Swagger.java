@@ -12,7 +12,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
- * @author Created by xiepuyao on 2018/02/06
+ * @author Created by ruxuanwo on 2018/02/06
  */
 @Configuration
 @EnableSwagger2
@@ -43,7 +43,7 @@ public class Swagger {
                 .title("title")
                 .description("description")
                 .termsOfServiceUrl("http://IP:Port/swagger-ui.html")
-                .contact(new Contact("ChenBin","http://www.uhope.com","chenbin@uhope.com"))
+                .contact(new Contact("ruxuanwo","http://www.ruxuanwo.cn","ruxuanwo@163.com"))
                 .version("3.0.0")
                 .build();
     }

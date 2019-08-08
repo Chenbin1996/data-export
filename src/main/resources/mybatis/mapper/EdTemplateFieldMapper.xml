@@ -30,6 +30,7 @@
             ed_template_field etf
         WHERE
             etf.template_id = #{templateId}
+            ORDER BY sort ASC
     </select>
 
     <select id="selectToolsByFieldId" parameterType="java.lang.String" resultType="com.ruxuanwo.data.export.dto.EdToolsDTO">
@@ -59,6 +60,6 @@
     </select>
 
     <select id="findByTemplate" resultMap="BaseResultMap" parameterType="java.lang.String">
-        SELECT * FROM ed_template_field WHERE template_id = #{id}
+        SELECT * FROM ed_template_field WHERE template_id = #{id} ORDER BY sort ASC
     </select>
 </mapper>

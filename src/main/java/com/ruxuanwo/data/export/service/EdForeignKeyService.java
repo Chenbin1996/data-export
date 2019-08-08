@@ -6,7 +6,7 @@ import java.lang.String;
 
 /**
  * 字段关联外键表-Service接口类
- * @author ChenBin on 2018/06/22
+ * @author ruxuanwo on 2018/06/22
  */
 public interface EdForeignKeyService extends Service<EdForeignKey, EdForeignKeyDTO, String> {
 

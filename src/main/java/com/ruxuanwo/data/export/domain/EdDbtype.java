@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 @Table(name = "ed_dbtype")
 public class EdDbtype implements Serializable {

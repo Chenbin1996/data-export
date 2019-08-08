@@ -8,7 +8,7 @@ import java.util.Date;
 
 /**
  * 模板数据库配置表-DTO数据传输对象类
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 public class EdTemplateDbconfigDTO extends EdTemplateDbconfig {

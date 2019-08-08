@@ -24,22 +24,27 @@ public abstract class AbstractService<T, DTO extends T, PK extends Serializable>
         this.modelClass = ((Class)pt.getActualTypeArguments()[0]);
     }
 
+    @Override
     public void insert(T entity) {
         this.mapper.insertSelective(entity);
     }
 
+    @Override
     public void batchInsert(List<T> entities) {
         this.mapper.insertList(entities);
     }
 
+    @Override
     public T get(PK id) {
         return this.mapper.selectByPrimaryKey(id);
     }
 
+    @Override
     public void remove(PK id) {
         this.mapper.deleteByPrimaryKey(id);
     }
 
+    @Override
     public void remove(T condition) {
         if (condition == null) {
             throw new RuntimeException("the condition is null when deleting the records!");
@@ -47,6 +52,7 @@ public abstract class AbstractService<T, DTO extends T, PK extends Serializable>
         this.mapper.delete(condition);
     }
 
+    @Override
     public void remove(Condition condition) {
         if (condition == null) {
         throw new RuntimeException("the condition is null when deleting the records!");
@@ -54,10 +60,12 @@ public abstract class AbstractService<T, DTO extends T, PK extends Serializable>
         this.mapper.deleteByCondition(condition);
     }
 
+    @Override
     public void removeByIds(String ids) {
         this.mapper.deleteByIds(ids);
     }
 
+    @Override
     public void removeByIdList(List<PK> idList) {
         int length = idList.size();
         String[] str = new String[length];
@@ -67,10 +75,12 @@ public abstract class AbstractService<T, DTO extends T, PK extends Serializable>
         this.mapper.deleteByIds(String.join(",", str));
     }
 
+    @Override
     public int update(T model) {
         return this.mapper.updateByPrimaryKeySelective(model);
     }
 
+    @Override
     public void update(T model, PK id) throws IllegalAccessException, NoSuchFieldException {
         Field field = this.modelClass.getDeclaredField("id");
         field.setAccessible(true);
@@ -78,6 +88,7 @@ public abstract class AbstractService<T, DTO extends T, PK extends Serializable>
         this.mapper.updateByPrimaryKeySelective(model);
     }
 
+    @Override
     public void update(T model, Condition condition) {
         if (condition == null) {
            throw new RuntimeException("the condition is null when updating the records!");
@@ -85,6 +96,7 @@ public abstract class AbstractService<T, DTO extends T, PK extends Serializable>
         this.mapper.updateByConditionSelective(model, condition);
     }
 
+    @Override
     public T findBy(String fieldName, Object value) throws TooManyResultsException {
         try {
             T model = this.modelClass.newInstance();
@@ -97,32 +109,39 @@ public abstract class AbstractService<T, DTO extends T, PK extends Serializable>
         }
     }
 
+    @Override
     public List<T> findByIds(String ids) {
         return this.mapper.selectByIds(ids);
     }
 
+    @Override
     public int count() {
         return this.mapper.selectCount(null);
     }
 
+    @Override
     public int count(String column) {
         Condition condition = new Condition(this.modelClass);
         condition.setCountProperty(column);
         return this.mapper.selectCountByCondition(condition);
     }
 
+    @Override
     public int count(T condition) {
         return this.mapper.selectCount(condition);
     }
 
+    @Override
     public int count(Condition condition) {
         return this.mapper.selectCountByCondition(condition);
     }
 
+    @Override
     public List<T> findByCondition(Condition condition) {
         return this.mapper.selectByCondition(condition);
     }
 
+    @Override
     public PageInfo<T> findByCondition(Condition condition, OrderBy orderBy, int pageSize, int pageNumber) {
         if (orderBy != null) {
             condition = condition == null ? new Condition(this.modelClass) : condition;
@@ -136,26 +155,32 @@ public abstract class AbstractService<T, DTO extends T, PK extends Serializable>
         return pageInfo;
     }
 
+    @Override
     public PageInfo<T> findByCondition(Condition condition, int pageSize, int pageNumber) {
         return findByCondition(condition, null, pageSize, pageNumber);
     }
 
+    @Override
     public PageInfo<T> find(int pageSize, int pageNumber) {
         return findByCondition(null, null, pageSize, pageNumber);
     }
 
+    @Override
     public PageInfo<T> find(OrderBy orderBy, int pageSize, int pageNumber) {
         return findByCondition(null, orderBy, pageSize, pageNumber);
     }
 
+    @Override
     public List<T> find(T condition) {
         return this.mapper.select(condition);
     }
 
+    @Override
     public List<T> find() {
         return this.mapper.selectAll();
     }
 
+    @Override
     public List<T> find(OrderBy orderBy) {
         Condition condition = new Condition(this.modelClass);
         condition.setOrderByClause(orderBy.toString());

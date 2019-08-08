@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * 模板字段表-DTO数据传输对象类
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 public class EdTemplateFieldDTO extends EdTemplateField {

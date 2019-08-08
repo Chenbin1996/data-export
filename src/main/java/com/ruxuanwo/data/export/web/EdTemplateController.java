@@ -5,8 +5,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.ruxuanwo.data.export.config.FieldConfig;
 import com.ruxuanwo.data.export.constants.Constant;
+import com.ruxuanwo.data.export.core.FieldConfig;
+import com.ruxuanwo.data.export.core.ServiceException;
 import com.ruxuanwo.data.export.domain.EdLog;
 import com.ruxuanwo.data.export.domain.EdTemplate;
 import com.ruxuanwo.data.export.domain.EdTemplateDbconfig;
@@ -16,7 +17,7 @@ import com.ruxuanwo.data.export.dto.EdTemplateDbconfigDTO;
 import com.ruxuanwo.data.export.enums.GeneratorEnum;
 import com.ruxuanwo.data.export.enums.LogStateEnum;
 import com.ruxuanwo.data.export.enums.RecordStateEnum;
-import com.ruxuanwo.data.export.exception.ServiceException;
+import com.ruxuanwo.data.export.read.impl.ReadFromJar;
 import com.ruxuanwo.data.export.service.EdLogService;
 import com.ruxuanwo.data.export.service.EdTemplateDbconfigService;
 import com.ruxuanwo.data.export.service.EdTemplateService;
@@ -27,12 +28,15 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tk.mybatis.mapper.entity.Condition;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,13 +49,16 @@ import java.util.Map;
 /**
  * 数据导入模板表-Controller类
  *
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 @Api(description = "数据导入模板表")
 @RestController
 @RequestMapping("/edTemplate")
 public class EdTemplateController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EdTemplateController.class);
+
     @Autowired
     private EdTemplateService edTemplateService;
     @Autowired
@@ -60,6 +67,7 @@ public class EdTemplateController {
     private EdLogService edLogService;
     @Autowired
     private EdTemplateTableService edTemplateTableService;
+
 
     @ApiOperation(value = "新增", notes = "单表新增")
     @ApiImplicitParams({
@@ -79,14 +87,25 @@ public class EdTemplateController {
                       @RequestParam(required = true) String dburl, @RequestParam(required = true) String username,
                       @RequestParam(required = true) String password, @RequestParam(required = true) Integer port,
                       @RequestParam(required = true) String dbname, @RequestParam(required = false) String appId,
-                      @RequestParam(required = false) String moduleId, @RequestParam(required = false) String moduleName) {
+                      @RequestParam(required = false) String moduleId, @RequestParam(required = false) String moduleName,
+                      HttpServletRequest request) {
+        String userId = "1";
         Integer size = edTemplateService.countByName(templateName);
-        if(size > 0){
+        if (size > 0) {
             return ResponseMsgUtil.failure("模版名称已经存在");
         }
-        String id = edTemplateService.add(templateName, description, connectionName, dbtypeId, dburl,
-                    username, password, port, dbname, appId, moduleId, moduleName, "1");
-        return ResponseMsgUtil.success(id);
+        String id;
+        try {
+            id = edTemplateService.add(templateName, description, connectionName, dbtypeId, dburl,
+                    username, password, port, dbname, appId, moduleId, moduleName, userId);
+        } catch (Exception e) {
+            return ResponseMsgUtil.failure();
+        }
+        if (id != null || "".equals(id)) {
+            return ResponseMsgUtil.success(id);
+        } else {
+            return ResponseMsgUtil.failure(null);
+        }
 
     }
 
@@ -152,14 +171,15 @@ public class EdTemplateController {
 
     /**
      * 若数据库类型，地址，数据库，表则改变删除临时表
+     *
      * @param edTemplateDbconfig
      */
-    private void deleteTable(EdTemplateDbconfig edTemplateDbconfig){
+    private void deleteTable(EdTemplateDbconfig edTemplateDbconfig) {
         EdTemplateDbconfig oldConif = edTemplateDbconfigService.get(edTemplateDbconfig.getId());
-        boolean typeChange = ! oldConif.getDbtypeId().equals(edTemplateDbconfig.getDbtypeId());
-        boolean urlChange = ! oldConif.getDburl().equals(edTemplateDbconfig.getDburl());
-        boolean dbChange = ! oldConif.getDbname().equals(edTemplateDbconfig.getDbname());
-        if(typeChange || urlChange || dbChange){
+        boolean typeChange = !oldConif.getDbtypeId().equals(edTemplateDbconfig.getDbtypeId());
+        boolean urlChange = !oldConif.getDburl().equals(edTemplateDbconfig.getDburl());
+        boolean dbChange = !oldConif.getDbname().equals(edTemplateDbconfig.getDbname());
+        if (typeChange || urlChange || dbChange) {
             edTemplateService.deleteTable(Constant.TABLE_PREFIX + edTemplateDbconfig.getTemplateId());
         }
     }
@@ -174,8 +194,10 @@ public class EdTemplateController {
                                  @RequestParam(defaultValue = "10") Integer size,
                                  @RequestParam(required = false) String appId,
                                  @RequestParam(required = false) String moduleId,
-                                 @RequestParam(required = false) String templateName) {
-        if (page > 0 && size > 0){
+                                 @RequestParam(required = false) String templateName,
+                                 @RequestParam(required = false) Integer type) {
+
+        if (page > 0 && size > 0) {
             PageHelper.startPage(page, size);
         }
         List<EdTemplateDTO> list = edTemplateService.list(appId, moduleId, templateName);
@@ -213,9 +235,9 @@ public class EdTemplateController {
     @ApiImplicitParams({
     })
     @GetMapping("/tableConfig")
-    public Result tableConfig(String templateId){
+    public Result tableConfig(String templateId) {
         List<Map<String, Object>> tableConfig = edTemplateService.tableConfig(templateId);
-        if (tableConfig == null || tableConfig.isEmpty()){
+        if (tableConfig == null || tableConfig.isEmpty()) {
             return ResponseMsgUtil.failure();
         }
         return ResponseMsgUtil.success(tableConfig);
@@ -238,37 +260,46 @@ public class EdTemplateController {
     @PostMapping("/excelImport")
     @Transactional(rollbackFor = Exception.class)
     public Result excelImport(@RequestParam(required = true) String templateId,
-                              @RequestParam(required = true) MultipartFile multipartFile) throws Exception {
+                              @RequestParam(required = true) MultipartFile multipartFile,
+                              HttpServletRequest request) throws Exception {
         try {
+            String userId = "1";
             List<FieldConfig> fieldConfigs = edTemplateService.selectByTemplateId(templateId);
-            if(fieldConfigs.isEmpty()){
+            if (fieldConfigs.isEmpty()) {
                 return ResponseMsgUtil.failure("当前模板没有excel字段，请为模板添加excel字段！");
             }
-            List<List<String>> list = ExportUtil.importExcel(multipartFile.getInputStream(),
-                    multipartFile.getOriginalFilename(),
-                    fieldConfigs.size());
-            if(list.size() <= 1){
+
+            List<List<String>> list = null;
+            try {
+                list = ExportUtil.importExcel(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), fieldConfigs.size());
+            }catch (Exception e){
+                LOGGER.error("excelImport 接口异常，{}", e);
+                return ResponseMsgUtil.failure("解析excel异常，请下载正确的模板进行导入!");
+            }
+            //excel解析正确
+            if (list.size() <= 1) {
                 return ResponseMsgUtil.failure("请勿导入没有数据的excel");
             }
+            //判断excel是否为导入模板
             List<FieldConfig> headConfig = new ArrayList<>();
             boolean flag;
             for (FieldConfig fieldConfig : fieldConfigs) {
                 flag = false;
                 for (String excelField : list.get(0)) {
-                    if(fieldConfig.getExcelName().equals(excelField)){
+                    if (fieldConfig.getExcelName().equals(excelField)) {
                         headConfig.add(fieldConfig);
                         flag = true;
                         break;
                     }
                 }
-                if(!flag){
+                if (!flag) {
                     return ResponseMsgUtil.failure("所导入的excel不属于该模板，请重新导入！");
                 }
             }
-            EdLog edLog = edLogService.add(templateId, Long.parseLong((list.size() - 1) + ""), "1");
-            edTemplateService.excelImport(templateId, list,headConfig,edLog.getId());
+            EdLog edLog = edLogService.add(templateId, Long.parseLong((list.size() - 1) + ""), userId);
+            edTemplateService.excelImport(templateId, list, headConfig, edLog.getId());
             return ResponseMsgUtil.success(edLog.getId());
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ServiceException("数据导入异常：" + e.getMessage());
         }
     }
@@ -296,14 +327,14 @@ public class EdTemplateController {
         EdLog edLog = edLogService.get(logId);
         edTemplateService.deleteTemporary(Constant.TABLE_PREFIX + templateId, id, logId, null);
         edTemplateService.deleteTemporary(Constant.TABLE_PREFIX + templateId + Constant.TABLE_SUFFIX, null, logId, id);
-        if ("".equals(id) || id == null){
+        if ("".equals(id) || id == null) {
             edLogService.remove(edLog);
             return ResponseMsgUtil.success(null);
-        }else {
+        } else {
             Long count = edLog.getTotalCount() - 1L;
-            if(count.equals(0L)){
+            if (count.equals(0L)) {
                 edLogService.remove(edLog);
-            }else {
+            } else {
                 edLog.setTotalCount(count);
                 edLogService.update(edLog);
             }
@@ -316,7 +347,7 @@ public class EdTemplateController {
     })
     @PostMapping("/checkTemporary")
     public Result checkTemporary(@RequestParam(required = true) String templateId,
-                                 @RequestParam(required = true) String data){
+                                 @RequestParam(required = true) String data) {
 
         HashMap hashMap = edTemplateService.checkTemporary(templateId, data);
         return ResponseMsgUtil.success(hashMap);
@@ -326,21 +357,23 @@ public class EdTemplateController {
     @ApiImplicitParams({
     })
     @GetMapping("/excelExport")
-
     public Result excelExport(HttpServletResponse response, @RequestParam(required = true) String templateId) throws IOException {
-
+        //获取模板
         EdTemplate edTemplate = edTemplateService.get(templateId);
+        OutputStream os = response.getOutputStream();
+        response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.addHeader("Content-Disposition", "attachment;filename=" + new String((edTemplate.getTemplateName() + "导入模板").getBytes("gb2312"), "ISO-8859-1") + ".xls");
+
+        LOGGER.info("下载模板名称 name = {}", edTemplate.getTemplateName());
+
         Workbook workbook = edTemplateService.excelExport(templateId);
-        OutputStream os = null;
         try {
-            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
-            response.setCharacterEncoding("UTF-8");
-            response.addHeader("Content-Disposition", "attachment;filename=" + new String((edTemplate.getTemplateName() + "导入模板").getBytes("gb2312"), "ISO-8859-1") + ".xls");
-            os = response.getOutputStream();
+            LOGGER.info("重新生成模板-------------------");
             workbook.write(os);
         } catch (IOException e) {
             throw new ServiceException("导出异常：" + e.getMessage());
-        }finally {
+        } finally {
             os.flush();
             os.close();
         }
@@ -398,7 +431,7 @@ public class EdTemplateController {
     @GetMapping("/isRepeat")
     public Result isRepeat(String name) {
         Integer size = edTemplateService.countByName(name);
-        if(size > 0){
+        if (size > 0) {
             return ResponseMsgUtil.failure();
         }
         return ResponseMsgUtil.success(null);
@@ -410,8 +443,8 @@ public class EdTemplateController {
     @GetMapping("/isFinishImport")
     public Result isFinishImport(String templateId) {
         List<EdLog> edLogs = edLogService.findByTemplateIdAndStatus(templateId, LogStateEnum.WAIT.getCode());
-        if(! edLogs.isEmpty()){
-            return ResponseMsgUtil.failure(edLogs.size()+"");
+        if (!edLogs.isEmpty()) {
+            return ResponseMsgUtil.failure(edLogs.size() + "");
         }
         return ResponseMsgUtil.success(null);
     }
@@ -426,7 +459,7 @@ public class EdTemplateController {
         condition.createCriteria().andEqualTo("templateId", templateId);
         List<EdTemplateTable> byCondition = edTemplateTableService.findByCondition(condition);
         for (int i = 0; i < byCondition.size(); i++) {
-            if (!byCondition.get(i).getKenGenerate().equals(GeneratorEnum.CUSTOMIZE.getNum())){
+            if (!byCondition.get(i).getKenGenerate().equals(GeneratorEnum.CUSTOMIZE.getNum())) {
                 list.get(i).remove(0);
             }
         }
@@ -437,7 +470,7 @@ public class EdTemplateController {
     @ApiImplicitParams({
     })
     @GetMapping("/checkNUllField")
-    public Result checkNUllField(String templateId,String data) {
+    public Result checkNUllField(String templateId, String data) {
         List<List<String>> list = edTemplateService.getNotNUllField(templateId);
         //删除id字段
         list.remove("id");
@@ -448,14 +481,14 @@ public class EdTemplateController {
             flag = false;
             for (int i = 0; i < array.size(); i++) {
                 object = array.getJSONObject(i);
-                for (String s1 : s){
+                for (String s1 : s) {
                     flag = s1.equals(object.getString("type")) ? true : false;
                 }
                 if (flag) {
                     break;
                 }
             }
-            if (! flag) {
+            if (!flag) {
                 return ResponseMsgUtil.failure(nullFieldTips(list));
             }
         }
@@ -463,19 +496,54 @@ public class EdTemplateController {
     }
 
 
-
     /**
      * 拼接非空字段
+     *
      * @param list
      * @return
      */
-    private String nullFieldTips(List<List<String>> list){
+    private String nullFieldTips(List<List<String>> list) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Object s : list) {
-            stringBuilder.append(s+",");
+            stringBuilder.append(s + ",");
         }
-        stringBuilder.deleteCharAt(stringBuilder.toString().length()-1);
+        stringBuilder.deleteCharAt(stringBuilder.toString().length() - 1);
         return stringBuilder.toString();
     }
 
+    /**
+     * 查询所有需要非空效验字段
+     * @param templateId
+     * @return
+     */
+    @GetMapping("/getNullCheckFileds")
+    public Result getNullCheckFileds(String templateId) {
+        List<String> list = edTemplateService.getNullCheckFileds(templateId);
+        return ResponseMsgUtil.success(list);
+    }
+
+
+    /**
+     * 查询所有需要非空效验字段
+     * @param filePath
+     * @return
+     */
+    @GetMapping("/test")
+    public Result test(String filePath, HttpServletResponse response) {
+        ReadFromJar readFromJar = new ReadFromJar();
+        byte[] read = readFromJar.read(filePath);
+        OutputStream os = null;
+        try {
+            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            response.addHeader("Content-Disposition", "attachment;filename=" + new String(("test").getBytes("gb2312"), "ISO-8859-1") + ".xls");
+            os = response.getOutputStream();
+            os.write(read);
+        } catch (IOException e) {
+            throw new ServiceException("导出异常：" + e.getMessage());
+        } finally {
+
+        }
+        return ResponseMsgUtil.success();
+    }
 }

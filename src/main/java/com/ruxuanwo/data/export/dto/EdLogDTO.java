@@ -4,7 +4,7 @@ import com.ruxuanwo.data.export.domain.EdLog;
 
 /**
  * 数据导入日志表-DTO数据传输对象类
- * @author chenbin on 2018/05/08
+ * @author ruxuanwo on 2018/05/08
  * @version 3.0.0
  */
 public class EdLogDTO extends EdLog {

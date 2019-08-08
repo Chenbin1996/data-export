@@ -1,5 +1,7 @@
 package com.ruxuanwo.data.export.dto;
 import com.ruxuanwo.data.export.domain.EdTemplateTable;
+import com.ruxuanwo.data.export.enums.RepeatCheckEnum;
+import com.ruxuanwo.data.export.core.GeneratorData;
 import com.ruxuanwo.data.export.enums.GeneratorEnum;
 import com.ruxuanwo.data.export.enums.ValueTypeEnum;
 
@@ -11,7 +13,7 @@ import java.util.UUID;
 
 /**
  * 模版关联表-DTO数据传输对象类
- * @author ChenBin on 2018/06/22
+ * @author ruxuanwo on 2018/06/22
  */
 public class EdTemplateTableDTO extends EdTemplateTable {
     /**
@@ -27,21 +29,26 @@ public class EdTemplateTableDTO extends EdTemplateTable {
      */
     private StringBuilder selectPrepareSql;
     /**
+     * 预处理更新查询sql
+     */
+    private StringBuilder updatePrepareSql;
+    /**
      * 字段数据
      */
     private List<FieldDTO> fieldList;
     /**
      * 存放要保存的所有字段和数据
      */
-    private HashMap<String,String> keyAndValue;
+    private Map<String,Object> keyAndValue;
     /**
      * 存放需要进行重复性判断的字段和值
      */
-    private HashMap<String,String> selectKeyAndValue;
+    private Map<String,Object> selectKeyAndValue;
     /**
      * 数据库连接
      */
     private Connection connection;
+
 
     /**
      * 放入所有字段和数据
@@ -49,7 +56,7 @@ public class EdTemplateTableDTO extends EdTemplateTable {
      * @param dataMap 导入的一行数据
      * @param list    表集合
      */
-    public void putAllValue(EdTemplateTableDTO table, Map<String, String> dataMap, List<EdTemplateTableDTO> list) throws Exception {
+    public void putAllValue(EdTemplateTableDTO table, Map<String, Object> dataMap, List<EdTemplateTableDTO> list) throws Exception {
         if (table.getKenGenerate().equals(GeneratorEnum.UUID.getNum())) {
             table.putKeyAndValue(table.getKeyName(), UUID.randomUUID().toString().replace("-", ""));
         }
@@ -66,23 +73,22 @@ public class EdTemplateTableDTO extends EdTemplateTable {
      * @param list    当前导入表类集合
      * @return
      */
-    private String getFieldValue(FieldDTO field, Map<String, String> dataMap, List<EdTemplateTableDTO> list) throws Exception {
-        String value = null;
+    private Object getFieldValue(FieldDTO field, Map<String, Object> dataMap, List<EdTemplateTableDTO> list) throws Exception {
+        Object value = null;
         if (field.getType().equals(ValueTypeEnum.EXCEL.getCode())) {
-            value = dataMap.get(field.getExcelName());
-            if(value != null && !"".equals(value)){
-                selectKeyAndValue.put(field.getFieldName(), value);
-            }else if ("".equals(value)){
-                //将空字符串设置为null防止插入数据库失败
-                value = null;
-            }
+            //将空字符串设置为null防止插入数据库失败
+            Object o = dataMap.get(field.getExcelName());
+            value = o == null ? null : o.toString().trim().isEmpty() ? null : o.toString();
+//            value = dataMap.get(field.getExcelName());
         } else if (field.getType().equals(ValueTypeEnum.DEFAULT.getCode())) {
             value = field.getDefaultValue();
-            selectKeyAndValue.put(field.getFieldName(), value);
         } else if (field.getType().equals(ValueTypeEnum.GENERATOR.getCode())) {
             value = field.getGenerator().generator(new GeneratorData(this.getTableName(), field.getFieldName(),this.getConnection())).toString();
         } else if (field.getType().equals(ValueTypeEnum.FOREIGN.getCode())) {
             value = this.getForeignValue(list, field);
+        }
+        //若字段需要进行重复性校验，则加入
+        if (RepeatCheckEnum.isRepeatCheck(field.getRepeatCheck())){
             selectKeyAndValue.put(field.getFieldName(), value);
         }
         return value;
@@ -95,7 +101,7 @@ public class EdTemplateTableDTO extends EdTemplateTable {
      * @param field 当前字段
      * @return
      */
-    private String getForeignValue(List<EdTemplateTableDTO> list, FieldDTO field) {
+    private Object getForeignValue(List<EdTemplateTableDTO> list, FieldDTO field) {
         for (EdTemplateTableDTO table : list) {
             if (table.getTableName().equals(field.getForeignTable())) {
                 return table.getKeyAndValue().get(field.getForeignField());
@@ -142,6 +148,23 @@ public class EdTemplateTableDTO extends EdTemplateTable {
     }
 
     /**
+     * 创建预处理更新sql
+     */
+    public void createUpdatePrepareSql(){
+        //if(this.insertPrepareSql != null){
+        //    return;
+        //}
+        StringBuilder sql = new StringBuilder();
+        sql.append("UPDATE ").append(this.getTableName()).append(" set ");
+        for(String key : keyAndValue.keySet()){
+            sql.append(key).append(" = ").append(" ? ").append(",");
+        }
+        sql.deleteCharAt(sql.length() - 1);
+        sql.append(" where ").append(this.getKeyName()).append(" = ?");
+        this.updatePrepareSql = sql;
+    }
+
+    /**
      * 创建查询预处理sql
      */
     public void createSelectPrepareSql(){
@@ -149,6 +172,10 @@ public class EdTemplateTableDTO extends EdTemplateTable {
         //    return;
         //}
         StringBuilder sql = new StringBuilder();
+        if (selectKeyAndValue == null || selectKeyAndValue.isEmpty()){
+            selectPrepareSql = sql;
+            return;
+        }
         sql.append("SELECT * FROM ")
             .append(this.getTableName())
             .append(" WHERE ");
@@ -164,7 +191,7 @@ public class EdTemplateTableDTO extends EdTemplateTable {
      * @param key 字段名称
      * @param value 字段值
      */
-    public void putKeyAndValue(String key, String value){
+    public void putKeyAndValue(String key, Object value){
         this.keyAndValue.put(key,value);
     }
 
@@ -172,19 +199,11 @@ public class EdTemplateTableDTO extends EdTemplateTable {
      * 清空存放要保存的字段和数据，创建新map
      */
     public void cleanAndNewMap(){
-        this.keyAndValue = null;
         this.keyAndValue = new HashMap<>(16);
-        this.selectKeyAndValue = null;
         this.selectKeyAndValue = new HashMap<>(16);
     }
 
-    public HashMap<String, String> getKeyAndValue() {
-        return keyAndValue;
-    }
 
-    public void setKeyAndValue(HashMap<String, String> keyAndValue) {
-        this.keyAndValue = keyAndValue;
-    }
 
     public StringBuilder getInsertSql() {
         return insertSql;
@@ -226,12 +245,24 @@ public class EdTemplateTableDTO extends EdTemplateTable {
         this.connection = connection;
     }
 
-    public HashMap<String, String> getSelectKeyAndValue() {
+    public Map<String, Object> getKeyAndValue() {
+        return keyAndValue;
+    }
+
+    public void setKeyAndValue(Map<String, Object> keyAndValue) {
+        this.keyAndValue = keyAndValue;
+    }
+
+    public Map<String, Object> getSelectKeyAndValue() {
         return selectKeyAndValue;
     }
 
-    public void setSelectKeyAndValue(HashMap<String, String> selectKeyAndValue) {
+    public void setSelectKeyAndValue(Map<String, Object> selectKeyAndValue) {
         this.selectKeyAndValue = selectKeyAndValue;
+    }
+
+    public StringBuilder getUpdatePrepareSql() {
+        return updatePrepareSql;
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.utils;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author chenbin
+ * @author ruxuanwo
  * @date Created on 2017/12/12
  */
 public class RequestUtil {

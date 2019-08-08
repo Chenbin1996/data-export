@@ -1,14 +1,14 @@
 package com.ruxuanwo.data.export.service;
 
-import com.ruxuanwo.data.export.core.Service;
 import com.ruxuanwo.data.export.domain.EdTemplateTable;
+import com.ruxuanwo.data.export.core.Service;
 import com.ruxuanwo.data.export.dto.EdTemplateTableDTO;
 
 import java.util.List;
 
 /**
  * 模版关联表-Service接口类
- * @author ChenBin on 2018/06/22
+ * @author ruxuanwo on 2018/06/22
  */
 public interface EdTemplateTableService extends Service<EdTemplateTable, EdTemplateTableDTO, String> {
     /**

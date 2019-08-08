@@ -8,11 +8,9 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 public class TreeUtil {
-
-    private static String ROOT_ID = "0";
 
     private TreeUtil(){}
 
@@ -27,7 +25,7 @@ public class TreeUtil {
             return null;
         }
         TreeNode treeNode = new TreeNode();
-        convert(nodes, treeNode, ROOT_ID);
+        convert(nodes, treeNode, "0");
         return treeNode.getChildren();
     }
     /**
@@ -54,12 +52,12 @@ public class TreeUtil {
     }
 
     private static  Boolean isParentAndSonByPid(String pid, TreeNode node) {
-        if (ROOT_ID.equals(pid)) {
+        if ("0".equals(pid)) {
             if ( node!= null && pid.equals(node.getpId())) {
                 return true;
             }
         } else {
-            if (node != null && pid != null && (!ROOT_ID.equals(node.getpId())) && (pid.startsWith(node.getpId()))) {
+            if (node != null && pid != null && (!"0".equals(node.getpId())) && (pid.startsWith(node.getpId()))) {
                 return true;
             }
         }

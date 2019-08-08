@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 @Table(name = "ed_tools")
 public class EdTools implements Serializable {

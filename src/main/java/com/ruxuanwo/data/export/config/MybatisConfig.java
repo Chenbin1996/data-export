@@ -16,7 +16,7 @@ import tk.mybatis.spring.mapper.MapperScannerConfigurer;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Mybatis & Mapper & PageHelper 配置
@@ -138,7 +138,7 @@ public class MybatisConfig {
     public static MapperScannerConfigurer mapperScannerConfigurer() {
         MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
         mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactoryBean");
-        mapperScannerConfigurer.setBasePackage("com.ruxuanwo.**.mapper");
+        mapperScannerConfigurer.setBasePackage("com.ruxuanwo.data.export.mapper");
 
         // 配置通用Mapper，详情请查阅官方文档
         Properties properties = new Properties();

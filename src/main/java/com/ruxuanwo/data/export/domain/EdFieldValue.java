@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.domain;
 import javax.persistence.*;
 import java.io.Serializable;
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 @Table(name = "ed_field_value")
 public class EdFieldValue implements Serializable {

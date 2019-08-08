@@ -7,22 +7,28 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.ruxuanwo.data.export.check.Client;
 import com.ruxuanwo.data.export.check.Factory;
-import com.ruxuanwo.data.export.config.FieldConfig;
 import com.ruxuanwo.data.export.constants.Constant;
 import com.ruxuanwo.data.export.constants.ExcelConstant;
-import com.ruxuanwo.data.export.core.AbstractService;
+import com.ruxuanwo.data.export.constants.ToolConstant;
+import com.ruxuanwo.data.export.core.*;
 import com.ruxuanwo.data.export.domain.*;
-import com.ruxuanwo.data.export.dto.*;
+import com.ruxuanwo.data.export.dto.EdTemplateDTO;
+import com.ruxuanwo.data.export.dto.EdTemplateDbconfigDTO;
+import com.ruxuanwo.data.export.enums.CheckFailEnum;
 import com.ruxuanwo.data.export.enums.LogStateEnum;
 import com.ruxuanwo.data.export.enums.RecordStateEnum;
 import com.ruxuanwo.data.export.executor.AsyncService;
 import com.ruxuanwo.data.export.importer.Importer;
 import com.ruxuanwo.data.export.mapper.*;
+import com.ruxuanwo.data.export.service.EdTableFieldService;
 import com.ruxuanwo.data.export.service.EdTemplateService;
+import com.ruxuanwo.data.export.utils.ConverUtil;
 import com.ruxuanwo.data.export.utils.CryptoUtil;
 import com.ruxuanwo.data.export.utils.DataBaseUtil;
 import com.ruxuanwo.data.export.utils.ExportUtil;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,16 +36,19 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * 数据导入模板表-ServiceImpl接口实现类
  *
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplateDTO, String> implements EdTemplateService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EdTemplateServiceImpl.class);
     @Resource
     private EdTemplateMapper edTemplateMapper;
     @Autowired
@@ -54,10 +63,13 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
     private EdTemplateTableMapper edTemplateTableMapper;
     @Autowired
     private AsyncService asyncService;
+    @Autowired
+    private EdTableFieldService edTableFieldService;
 
     @Override
     public List<EdTemplateDTO> list(String appId, String moduleId, String templateName) {
-        List<EdTemplateDTO> list = edTemplateMapper.list(appId, moduleId, templateName);
+        List<EdTemplateDTO> list = edTemplateMapper.list(appId, moduleId, ConverUtil.mysqlEscape(templateName));
+
         return list;
     }
 
@@ -143,7 +155,7 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
     }
 
     @Override
-    public void excelImport(String templateId, List<List<String>> list, List<FieldConfig> headConfig, String logId){
+    public void excelImport(String templateId, List<List<String>> list, List<FieldConfig> headConfig, String logId) throws ExecutionException, InterruptedException {
         //创建临时表
         this.createTable(templateId, headConfig);
         //导入数据列数
@@ -153,13 +165,13 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
         List<Line> lineList = new ArrayList<>();
         //行数循环
         for (int i = 1; i < lineSize; i++) {
-            Line line = new Line();
+            Line line = new Line(i);
             //获取除了头部标题以外其他行数据
             List<String> dataLine = list.get(i);
             for (int j = 0; j < columnSize; j++) {
                 //获取当前一列的所有数据库信息
                 FieldConfig fieldConfig = headConfig.get(j);
-                fieldConfig.setParamData(dataLine.get(j));
+                fieldConfig.setParamData(dataLine.get(j), dataLine, headConfig);
                 //创建一个单元格对象，头部标题与列数据对应
                 Cell cell = new Cell(fieldConfig.getExcelName(), dataLine.get(j));
                 this.check(cell, fieldConfig);
@@ -170,6 +182,7 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
             line.createSql();
             line.cleanCells();
             lineList.add(line);
+
         }
         this.tableInsert(templateId, headConfig, lineList, logId);
     }
@@ -177,10 +190,10 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
     /**
      * 赋值缺省值
      *
-     * @param cell         当前单元格
+     * @param cell        当前单元格
      * @param fieldConfig 字段信息
      */
-    private void dealWithDefaultValue(Cell cell,FieldConfig fieldConfig) {
+    private void dealWithDefaultValue(Cell cell, FieldConfig fieldConfig) {
         if (cell.getValue() == null) {
             cell.setValue(fieldConfig.getDefaultValue());
             fieldConfig.setConverParameter(cell.getValue());
@@ -198,7 +211,7 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
             return;
         }
         //若无值但存在缺省值，则不需要校验
-        if (cell.getValue() == null  && fieldConfig.getDefaultValue() != null) {
+        if (cell.getValue() == null && fieldConfig.getDefaultValue() != null) {
             return;
         }
         executeCheck(cell, fieldConfig.getClient());
@@ -213,7 +226,19 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
      */
     private void executeCheck(Cell cell, Client client) {
         client.reset();
-        List<Information> informations = client.startValidate();
+        List<Information> informations;
+        try {
+            informations = client.startValidate();
+        } catch (Exception e) {
+            LOGGER.error("校验异常:{}", e);
+            informations = new ArrayList<>();
+            Information information = new Information();
+            information.setMsg("校验异常:" + e.getMessage());
+            information.setData("");
+            information.setType(CheckFailEnum.fail_error.getCode());
+            information.setState(RecordStateEnum.ERROR.getCode());
+            informations.add(information);
+        }
         cell.setCheckInforms(informations);
     }
 
@@ -223,16 +248,34 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
      * @param cell        当前单元格
      * @param fieldConfig 该字段配置
      */
-    private void executeConver(Cell cell, FieldConfig fieldConfig){
+
+    private void executeConver(Cell cell, FieldConfig fieldConfig) {
         if (fieldConfig.getConversion() == null) {
             return;
         }
         //没值不进行转换
-        if(cell.getValue() == null){
+        if (cell.getValue() == null) {
             return;
         }
-        Information information = fieldConfig.getConversion().conversion(fieldConfig.getConverParameter());
+        //捕获异常
+        Information information;
+        try {
+            information = fieldConfig.getConversion().conversion(fieldConfig.getConverParameter());
+        } catch (Exception e) {
+            LOGGER.error("转换异常:{}", e);
+            information = getExceptionInformation(fieldConfig, e);
+        }
         cell.setConverInform(information);
+    }
+
+    private Information getExceptionInformation(FieldConfig fieldConfig, Exception e) {
+        Information information;
+        information = new Information();
+        information.setData(fieldConfig.getConverParameter().getData());
+        information.setType(fieldConfig.getConverParameter().getType());
+        information.setState(RecordStateEnum.ERROR.getCode());
+        information.setMsg("转换异常:" + e.getMessage());
+        return information;
     }
 
 
@@ -244,15 +287,19 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
      * @param lineList   所有行数据
      * @param logId      日志id
      */
-    private void tableInsert(String templateId, List<FieldConfig> headConfig, List<Line> lineList, String logId) {
+    private void tableInsert(String templateId, List<FieldConfig> headConfig, List<Line> lineList, String logId) throws ExecutionException, InterruptedException {
+        Future<String> future = asyncService.executeAsync(templateId, headConfig, lineList, logId);
+
         HashMap<String, Object> map = new HashMap<>(16);
         map.put("tableName", Constant.TABLE_PREFIX + templateId);
         map.put("logId", logId);
         map.put("columns", headConfig);
         map.put("data", lineList);
         edTemplateMapper.oldTableInsert(map);
-        asyncService.executeAsync(templateId, headConfig, lineList, logId);
-
+        LOGGER.info("插入临时旧表完成");
+        //会阻塞异步线程直到完成
+        future.get();
+        LOGGER.info("插入临时新表完成");
     }
 
 
@@ -265,7 +312,11 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
         HashMap<String, Object> map = new HashMap<>(16);
         map.put("tableName", Constant.TABLE_PREFIX + templateId);
         map.put("list", fieldConfigs);
+        //todo 是否可以检测原表字段类型来设置长度？
+        //临时表默认字段长2000，防止超出表长度，超过FIELF_COUNT时缩小
+        map.put("fieldLength", Constant.FIELD_LENGTH / fieldConfigs.size());
         edTemplateMapper.createOldDataTable(map);
+
         map.clear();
         map.put("tableName", Constant.TABLE_PREFIX + templateId + Constant.TABLE_SUFFIX);
         map.put("list", fieldConfigs);
@@ -296,6 +347,7 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
         hashMap.put("log_id", "log_id");
         hashMap.put("state", "数据校验状态");
         hashMap.put("message", "错误信息");
+        hashMap.put("wrong_field", "wrong_field");
         PageHelper.startPage(page, size);
         List dataList = edTemplateMapper.findTemByLogId(Constant.TABLE_PREFIX + templateId, logId, dataType, hashMap);
         PageInfo pageInfo = new PageInfo(dataList);
@@ -318,23 +370,25 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
     }
 
     @Override
-    public void deleteTemporary(String tableName, String id, String logId,String temporaryId) {
+    public void deleteTemporary(String tableName, String id, String logId, String temporaryId) {
         edTemplateMapper.deleteTemporary(tableName, id, logId, temporaryId);
     }
 
     @Override
-    public HashMap checkTemporary(String templateId, String data){
+    public HashMap checkTemporary(String templateId, String data) {
         List<FieldConfig> fieldConfigList = this.selectByTemplateId(templateId);
         HashMap<String, Object> map = new HashMap<>(16);
         HashMap<String, Object> sqlMap = new HashMap<>(16);
         JSONObject object = JSON.parseObject(data);
         Line line = new Line();
         String temporaryId = object.getString("id");
-        StringBuilder builder = new StringBuilder();
+        StringBuilder msg = new StringBuilder();
+        //有错误的字段
+        StringBuilder wrongFiled = new StringBuilder().append("'");
         for (FieldConfig fieldConfig : fieldConfigList) {
             //根据头部名称获取值
             String dataValue = object.getString(fieldConfig.getExcelName());
-            fieldConfig.setParamData(dataValue);
+            fieldConfig.setParamData(dataValue, object);
             //创建单元格对象赋值数据
             Cell cell = new Cell(fieldConfig.getExcelName(), dataValue);
             //校验
@@ -344,31 +398,40 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
             //将单元格放入一行对象中
             line.addToCells(cell);
             //存放错误信息
-            builder.append(cell.putErrorMsg());
+            StringBuilder wrongMsg = cell.putErrorMsg();
+            msg.append(wrongMsg);
+            wrongFiled.append(wrongMsg.length() == 0 ? "" : cell.getExcelName() + "|");
             map.put(cell.getExcelName(), cell.getValue());
             //sql拼接
             sqlMap.put(fieldConfig.getColumnName(), dataValue);
         }
-        if (builder.length() <= 0) {
-            builder.append(Constant.DATA_RIGHT);
+        if (msg.length() <= 0) {
+            msg.append(Constant.DATA_RIGHT);
         } else {
-            builder.deleteCharAt(builder.length() - 1);
+            msg.deleteCharAt(msg.length() - 1);
         }
         line.createState();
-        map.put("log_id",object.getString("log_id"));
+        map.put("log_id", object.getString("log_id"));
         map.put("数据校验状态", RecordStateEnum.findByCode(line.getState()));
-        map.put("错误信息", builder.toString());
+        map.put("错误信息", msg.toString());
         map.put("id", temporaryId);
-        sqlMap.put("message", builder.toString());
+        map.put("wrong_field", wrongFiled.toString());
+        sqlMap.put("message", msg.toString());
         sqlMap.put("state", line.getState());
+        sqlMap.put("wrong_field", wrongFiled.toString());
         edTemplateMapper.updateTemporary(Constant.TABLE_PREFIX + templateId, temporaryId, sqlMap);
         for (int i = 0; i < fieldConfigList.size(); i++) {
             Cell cell = line.getCells().get(i);
             String value = cell.getValue();
-            if(cell.getConverInform() != null){
-                if(cell.getConverInform().getData()!=null){
-                    value = cell.getConverInform().getData().toString();
+            if (cell.getConverInform() != null) {
+                if(RecordStateEnum.RIGHT.getCode().equals(cell.getConverInform().getState())){
+                    value = cell.getConverInform().getData() == null ? null : cell.getConverInform().getData().toString();
+                }else {
+                    value = null;
                 }
+            }
+            if (cell.checkError()){
+                value = null;
             }
             sqlMap.put(fieldConfigList.get(i).getColumnName(), value);
         }
@@ -389,11 +452,12 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
 
     /**
      * 根据模板id获取导入器
+     *
      * @param templateId
      * @return
      */
-    private Importer getTemplateImport(String templateId){
-        String importName  = edTemplateMapper.getTemplateImport(templateId);
+    private Importer getTemplateImport(String templateId) {
+        String importName = edTemplateMapper.getTemplateImport(templateId);
         return (Importer) Factory.newInstance(importName);
     }
 
@@ -409,6 +473,7 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
         String newTemporaryId = edTemplateMapper.selectNewTemporary(Constant.TABLE_PREFIX + templateId + Constant.TABLE_SUFFIX, temporaryId);
         sqlMap.remove("state");
         sqlMap.remove("message");
+        sqlMap.remove("wrong_field");
         sqlMap.put("temporary_id", temporaryId);
         edTemplateMapper.updateTemporary(Constant.TABLE_PREFIX + templateId + Constant.TABLE_SUFFIX, newTemporaryId, sqlMap);
     }
@@ -421,10 +486,16 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
      */
     @Override
     public Map<String, String> tempKey(String templateId) {
-        HashMap<String, String> hashMap = new HashMap<>(16);
-        List<EdTemplateField> excelField = edTemplateFieldMapper.findByTemplate(templateId);
-        for (EdTemplateField field : excelField) {
-            hashMap.put(field.getName(), Constant.TABEL_FIELD + field.getSort());
+        Map<String, String> hashMap = new HashMap<>(16);
+
+//        List<EdTemplateField> excelField = edTemplateFieldMapper.findByTemplate(templateId);
+//        for (EdTemplateField field : excelField) {
+//            hashMap.put(field.getName(), Constant.TABEL_FIELD + field.getSort());
+//        }
+
+        List<FieldConfig> fieldConfigs = edTemplateMapper.selectByTemplateId(templateId);
+        for (FieldConfig field : fieldConfigs) {
+            hashMap.put(field.getExcelName(), field.getColumnName());
         }
         return hashMap;
     }
@@ -472,6 +543,14 @@ public class EdTemplateServiceImpl extends AbstractService<EdTemplate, EdTemplat
     public List<FieldConfig> selectByTemplateId(String templateId) {
         List<FieldConfig> list = edTemplateMapper.selectByTemplateId(templateId);
         return list;
+    }
+
+    @Override
+    public List<String> getNullCheckFileds(String templateId) {
+        Map<String, Object> params = new HashMap<>(16);
+        params.put("templateId", templateId);
+        params.put("toolId", ToolConstant.NULL_CHECK_TOOL_ID);
+        return edTemplateMapper.getNullCheckFileds(params);
     }
 
     /**

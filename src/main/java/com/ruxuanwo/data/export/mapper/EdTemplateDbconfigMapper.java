@@ -1,13 +1,13 @@
 package com.ruxuanwo.data.export.mapper;
 
 
-import com.ruxuanwo.data.export.core.Mapper;
 import com.ruxuanwo.data.export.domain.EdTemplateDbconfig;
+import com.ruxuanwo.data.export.core.Mapper;
 import com.ruxuanwo.data.export.dto.EdTemplateDbconfigDTO;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 public interface EdTemplateDbconfigMapper extends Mapper<EdTemplateDbconfig> {
     /**

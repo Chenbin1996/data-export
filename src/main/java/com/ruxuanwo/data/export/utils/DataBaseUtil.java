@@ -1,7 +1,9 @@
 package com.ruxuanwo.data.export.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.ruxuanwo.data.export.dto.EdTemplateDbconfigDTO;
 import com.ruxuanwo.data.export.exception.SqlErrorException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,10 +16,11 @@ import java.util.Map;
 /**
  * 自制操作连接数据库工具类
  *
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/4/20/0020 15:46
  */
 public class DataBaseUtil {
+
     private static final Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
 
 
@@ -85,16 +88,19 @@ public class DataBaseUtil {
         List<String> columnTypes = new ArrayList<>();
         Connection connection = getConnection(dbConfig);
         PreparedStatement statement = null;
-        String sql = "SELECT * FROM " + tableName;
+        //查询数据库字段类型
+        String sql = "SELECT column_type FROM information_schema.COLUMNS WHERE table_name = '" + tableName + "' AND table_schema  = '" + dbConfig.getDbname() + "'";
         try {
             statement = connection.prepareStatement(sql);
-            //结果集元数据
-            ResultSetMetaData metaData = statement.getMetaData();
-            //表列数
-            int size = metaData.getColumnCount();
-            for (int i = 0; i < size; i++) {
-                columnTypes.add(metaData.getColumnTypeName(i + 1));
-            }
+//            //结果集元数据
+//            ResultSetMetaData metaData = statement.getMetaData();
+//            //表列数
+//            int size = metaData.getColumnCount();
+//            for (int i = 0; i < size; i++) {
+//                columnTypes.add(metaData.getColumnTypeName(i + 1));
+//            }
+            ResultSet resultSet = statement.executeQuery();
+            columnTypes = resultSetToList(resultSet);
             logger.info("查询成功", columnTypes);
         } catch (SQLException e) {
             throw new SqlErrorException("获取数据库表字段类型失败[" + e.getMessage() + "]");
@@ -151,7 +157,9 @@ public class DataBaseUtil {
      *
      * @return
      */
-    public static Object insertPrepare(Connection connection, String sql, Map<String, String> keyAndValue) throws SQLException {
+    public static Object insertPrepare(Connection connection, String sql, Map<String, Object> keyAndValue) throws SQLException {
+        logger.info("insertPrepareSql : {}", sql);
+        logger.info("keyAndValue : {}", JSON.toJSONString(keyAndValue));
         Object object = null;
         PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         int i = 0;
@@ -168,7 +176,7 @@ public class DataBaseUtil {
     }
 
     /**
-     * 往数据库中插入数据
+     * 往数据库中更新数据
      *
      * @return
      */
@@ -179,13 +187,42 @@ public class DataBaseUtil {
     }
 
     /**
+     * 往数据库中更新数据
+     *
+     * @return
+     */
+    public static void updatePrepare(Connection connection, String sql, Map<String, Object> keyAndValue, Object keyValue) throws SQLException {
+        if (StringUtils.isEmpty(sql)){
+            return ;
+        }
+        logger.info("updatePrepareSql : {}", sql);
+        logger.info("keyAndValue : {}", JSON.toJSONString(keyAndValue));
+        if (keyAndValue == null) {
+            keyAndValue = new HashMap<>(1);
+        }
+        PreparedStatement statement = connection.prepareStatement(sql);
+        int i = 0;
+        for (String key : keyAndValue.keySet()) {
+            i++;
+            statement.setObject(i, keyAndValue.get(key));
+        }
+        statement.setObject(++i, keyValue);
+        statement.executeUpdate();
+    }
+
+    /**
      * 预处理方式查询数据库
      *
      * @return
      */
-    public static Object selectPrepare(Connection connection, String sql, Map<String, String> keyAndValue, String keyName) throws SQLException {
-        if (keyAndValue.isEmpty()) {
+    public static Object selectPrepare(Connection connection, String sql, Map<String, Object> keyAndValue, String keyName) throws SQLException {
+        if (StringUtils.isEmpty(sql)){
             return null;
+        }
+        logger.info("selectPrepareSql : {}", sql);
+        logger.info("keyAndValue : {}", JSON.toJSONString(keyAndValue));
+        if (keyAndValue == null) {
+            keyAndValue = new HashMap<>(1);
         }
         PreparedStatement statement = connection.prepareStatement(sql);
         int i = 0;

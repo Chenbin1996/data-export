@@ -1,10 +1,10 @@
 package com.ruxuanwo.data.export.web;
 
+import com.ruxuanwo.data.export.service.EdFieldToolsService;
 import com.ruxuanwo.data.export.utils.ResponseMsgUtil;
 import com.ruxuanwo.data.export.utils.Result;
 import com.ruxuanwo.data.export.domain.EdFieldTools;
 import com.ruxuanwo.data.export.enums.CheckFailEnum;
-import com.ruxuanwo.data.export.service.EdFieldToolsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * 字段工具表-Controller类
  *
- * @author chenbin on 2018/04/20
+ * @author ruxuanwo on 2018/04/20
  * @version 3.0.0
  */
 @Api(description = "字段工具表")

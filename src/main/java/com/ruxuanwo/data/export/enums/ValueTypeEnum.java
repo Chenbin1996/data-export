@@ -1,7 +1,7 @@
 package com.ruxuanwo.data.export.enums;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/6/26/0026 13:45
  */
 public enum  ValueTypeEnum {

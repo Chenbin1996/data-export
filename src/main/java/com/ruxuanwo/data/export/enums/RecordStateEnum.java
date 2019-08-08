@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.enums;
 /**
  * 导入数据到临时表时数据状态
  *
- * @author chenbin
+ * @author ruxuanwo
  * @date Created on 2018/5/8
  */
 public enum RecordStateEnum {
@@ -15,15 +15,15 @@ public enum RecordStateEnum {
     //错误
     ERROR(3,"错误");
 
-    private int code;
+    private Integer code;
     private String name;
 
-    RecordStateEnum(int code, String name) {
+    RecordStateEnum(Integer code, String name) {
         this.code = code;
         this.name = name;
     }
 
-    public int getCode() {
+    public Integer getCode() {
         return code;
     }
 

@@ -2,7 +2,7 @@ package com.ruxuanwo.data.export.mapper;
 
 
 import com.ruxuanwo.data.export.core.Mapper;
-import com.ruxuanwo.data.export.config.FieldConfig;
+import com.ruxuanwo.data.export.core.FieldConfig;
 import com.ruxuanwo.data.export.domain.EdTemplate;
 import com.ruxuanwo.data.export.domain.EdTools;
 import com.ruxuanwo.data.export.dto.EdTemplateDTO;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 public interface EdTemplateMapper extends Mapper<EdTemplate> {
     /**
@@ -153,7 +153,7 @@ public interface EdTemplateMapper extends Mapper<EdTemplate> {
      * @param hashMap
      * @return
      */
-    List<HashMap<String,String>> findNewTempData(@Param("templateId")String templateId,
+    List<Map<String,Object>> findNewTempData(@Param("templateId")String templateId,
                                                  @Param("logId")String logId,
                                                  @Param("map")Map hashMap);
 
@@ -164,4 +164,10 @@ public interface EdTemplateMapper extends Mapper<EdTemplate> {
      */
     String getTemplateImport(@Param("templateId") String templateId);
 
+    /**
+     * 获取所有勾选非空效验的字段
+     * @param params
+     * @return
+     */
+    List<String> getNullCheckFileds(Map<String, Object> params);
 }

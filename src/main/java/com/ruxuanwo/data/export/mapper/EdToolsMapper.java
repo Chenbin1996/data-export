@@ -1,16 +1,16 @@
 package com.ruxuanwo.data.export.mapper;
 
 
+import com.ruxuanwo.data.export.dto.EdToolsDTO;
 import com.ruxuanwo.data.export.core.Mapper;
 import com.ruxuanwo.data.export.domain.EdTools;
-import com.ruxuanwo.data.export.dto.EdToolsDTO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
 import java.util.List;
 
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 
 public interface EdToolsMapper extends Mapper<EdTools> {

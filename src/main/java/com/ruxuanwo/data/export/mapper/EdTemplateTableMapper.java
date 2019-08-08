@@ -1,12 +1,12 @@
 package com.ruxuanwo.data.export.mapper;
 
-import com.ruxuanwo.data.export.core.Mapper;
 import com.ruxuanwo.data.export.domain.EdTemplateTable;
+import com.ruxuanwo.data.export.core.Mapper;
 
 import java.util.List;
 
 /**
- * @author Chenbin
+ * @author ruxuanwo
  */
 public interface EdTemplateTableMapper extends Mapper<EdTemplateTable> {
     /**

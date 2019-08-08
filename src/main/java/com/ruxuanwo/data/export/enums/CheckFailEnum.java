@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.enums;
 /**
  * 校验字段失败时提示状态
  *
- * @author chenbin
+ * @author ruxuanwo
  * @date Created on 2018/4/25
  */
 public enum CheckFailEnum {

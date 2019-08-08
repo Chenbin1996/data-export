@@ -2,8 +2,8 @@ package com.ruxuanwo.data.export.check.impl;
 
 import com.ruxuanwo.data.export.check.Check;
 import com.ruxuanwo.data.export.check.Client;
-import com.ruxuanwo.data.export.dto.Information;
-import com.ruxuanwo.data.export.dto.Parameter;
+import com.ruxuanwo.data.export.core.Information;
+import com.ruxuanwo.data.export.core.Parameter;
 import com.ruxuanwo.data.export.enums.RecordStateEnum;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 /**
  * 手机号校验
  *
- * @author chenbin
+ * @author ruxuanwo
  */
 @Component("cellphoneCheck")
 public class CellphoneCheck implements Check {
@@ -32,7 +32,7 @@ public class CellphoneCheck implements Check {
     }
 
     private boolean isPhone(String src){
-        String regex = "(\\+\\d+)?1[34578]\\d{9}$";
+        String regex = "(\\+\\d+)?1[3456789]\\d{9}$";
         return Pattern.matches(regex, src);
     }
 

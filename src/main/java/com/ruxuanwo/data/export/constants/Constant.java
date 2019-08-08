@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.constants;
 /**
  * 常量类
  *
- * @author xiepuyao
+ * @author ruxuanwo
  * @date Created on 2017/11/24
  */
 public final class Constant {
@@ -57,12 +57,12 @@ public final class Constant {
     /**
      * @Fields RESULT_CODE_ILLEGAL_REQUEST : 非法请求返回码 未登录 或跳过登陆的请求
      */
-    public static final int  RESULT_CODE_ILLEGAL_REQUEST = 1008;
+    public static final int RESULT_CODE_ILLEGAL_REQUEST = 1008;
 
     /**
      * @Fields RESULT_CODE_PARAMS_EMPTY : 返回码 必填参数为空
      */
-    public static final int  RESULT_CODE_PARAMS_EMPTY = 1009;
+    public static final int RESULT_CODE_PARAMS_EMPTY = 1009;
 
 
     /**
@@ -108,7 +108,7 @@ public final class Constant {
     /**
      * @Fields RESULT_MSG_ILLEGAL_REQUEST : 非法请求返回码 未登录 或跳过登陆的请求
      */
-    public static final String  RESULT_MSG_ILLEGAL_REQUEST = "Illegal request";
+    public static final String RESULT_MSG_ILLEGAL_REQUEST = "Illegal request";
 
     /**
      * @Fields RESULT_MSG_EXCEPTION : 返回消息 请求抛出异常
@@ -118,7 +118,7 @@ public final class Constant {
     /**
      * @Fields RESULT_MSG_PARAMS_EMPTY : 返回消息 必填参数为空
      */
-    public static final String  RESULT_MSG_PARAMS_EMPTY = "the input parameter is null";
+    public static final String RESULT_MSG_PARAMS_EMPTY = "the input parameter is null";
 
     /**
      * 启用
@@ -157,6 +157,8 @@ public final class Constant {
     public static final String SHORE_ERROR = "岸别转换失败";
     public static final String ISNOTNULL = "转换值不能为空";
     public static final String SECTION_ERROR = "断面转换失败";
+    public static final String WATER_ERROR = "水系转换失败";
+    public static final String DICTIONARY_ERROR = "类别转换值为空";
     /**
      * 转换为空
      */
@@ -199,4 +201,16 @@ public final class Constant {
     public static final String RIVER_REACH_PID = "110";
     public static final String LAKES_REACH_PID = "112";
     public static final String RESERVOIR_REACH_PID = "114";
+    /**
+     * 清河行动
+     */
+    public static final String TASK_TYPE_ID = "b42fb1803b2a11e9800a005056b2014e";
+
+    /**
+     *
+     * 临时表默认字段长度
+     */
+    public static final Integer FIELD_LENGTH = 20000;
+
+
 }

@@ -11,6 +11,7 @@
     <result column="type" jdbcType="INTEGER" property="type" />
     <result column="field_type" jdbcType="INTEGER" property="fieldType" />
     <result column="template_id" jdbcType="INTEGER" property="templateId" />
+      <result column="repeat_check" jdbcType="INTEGER" property="repeatCheck" />
   </resultMap>
     
     <select id="detail" resultType="com.ruxuanwo.data.export.dto.EdTableFieldDTO" parameterType="java.lang.String">

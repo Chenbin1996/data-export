@@ -5,7 +5,6 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.ruxuanwo.data.export.filter.AddTokenFilter;
-import com.ruxuanwo.data.export.filter.ServiceFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +14,9 @@ import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -24,7 +26,7 @@ import java.nio.charset.Charset;
 
 /**
  * Spring MVC 配置
- * @author Chenbin
+ * @author ruxuanwo
  */
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
@@ -76,16 +78,17 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     /**
      * 这个Filter 解决页面跨域访问问题
      */
-    @Bean
-    public FilterRegistrationBean omsFilter() {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(new ServiceFilter());
-        registration.addUrlPatterns("/*");
-        registration.setName("MainFilter");
-        registration.setAsyncSupported(true);
-        registration.setOrder(1);
-        return registration;
-    }
+    //@ConditionalOnProperty(name = "cors.enable", havingValue = "true")
+    //@Bean
+    //public FilterRegistrationBean omsFilter() {
+    //    FilterRegistrationBean registration = new FilterRegistrationBean();
+    //    registration.setFilter(new ServiceFilter());
+    //    registration.addUrlPatterns("/*");
+    //    registration.setName("MainFilter");
+    //    registration.setAsyncSupported(true);
+    //    registration.setOrder(1);
+    //    return registration;
+    //}
 
     @Bean
     public FilterRegistrationBean addTokenFilter(){
@@ -110,6 +113,22 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         }
         factory.setLocation(location);
         return factory.createMultipartConfig();
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        final UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration corsConfiguration = new CorsConfiguration();
+        /*是否允许请求带有验证信息*/
+        corsConfiguration.setAllowCredentials(true);
+        /*允许访问的客户端域名*/
+        corsConfiguration.addAllowedOrigin("*");
+        /*允许服务端访问的客户端请求头*/
+        corsConfiguration.addAllowedHeader("*");
+        /*允许访问的方法名,GET POST等*/
+        corsConfiguration.addAllowedMethod("*");
+        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+        return new CorsFilter(urlBasedCorsConfigurationSource);
     }
 
 }

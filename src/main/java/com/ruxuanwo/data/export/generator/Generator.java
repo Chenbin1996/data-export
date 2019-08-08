@@ -1,9 +1,9 @@
 package com.ruxuanwo.data.export.generator;
 
-import com.ruxuanwo.data.export.dto.GeneratorData;
+import com.ruxuanwo.data.export.core.GeneratorData;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/6/26/0026 16:02
  */
 public interface Generator {

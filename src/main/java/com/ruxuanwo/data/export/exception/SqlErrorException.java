@@ -1,12 +1,13 @@
 package com.ruxuanwo.data.export.exception;
 
 
+import com.ruxuanwo.data.export.core.ServiceException;
 
 /**
- * @Author: ChenBin
+ * @Author: ruxuanwo
  * @Date: 2018/5/25/0025 14:22
  */
-public class SqlErrorException extends RuntimeException {
+public class SqlErrorException extends ServiceException {
     private static final String DEFAULT_MESSAGE = "数据库用户名或密码错误！";
     private String message;
 
@@ -17,9 +18,6 @@ public class SqlErrorException extends RuntimeException {
     public SqlErrorException(String message) {
         super();
         this.message = message;
-    }
-    public SqlErrorException(Throwable cause) {
-        super(cause);
     }
 
     @Override

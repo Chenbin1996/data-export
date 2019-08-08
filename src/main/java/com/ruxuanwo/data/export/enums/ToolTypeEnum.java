@@ -3,7 +3,7 @@ package com.ruxuanwo.data.export.enums;
 /**
  * 校验工具的类型
  *
- * @author chenbin
+ * @author ruxuanwo
  * @date Created on 2018/4/25
  * */
 public enum ToolTypeEnum {
